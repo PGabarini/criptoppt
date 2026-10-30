@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¿Cómo funciona ML-KEM? — Visualización Completa por Bloques</title>
+  <style>
+    :root {
+      --navy-header: #010212;     
+      --navy-mid: #164070;        
+      --peach-title: #F5A25D;     
+      --bg-ice: #e1edf7;          
+      --card-sky: #AEDDF2;        
+      --sky-corner: #45ace4;      
+      --white-sheet: #FFFFFF;     
+      --orange-bright: #FA790F;   
+      --orange-deep: #F25207;     
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-ice);
+      color: var(--navy-header);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 36px;
+    }
+
+    header {
+      width: 100%;
+      background-color: var(--navy-header);
+      text-align: center;
+      padding: 19px 14px 16px;
+      margin-bottom: 15px;
+      box-shadow: 0 4px 12px rgba(25, 30, 82, 0.15);
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: var(--peach-title);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      color: var(--bg-ice);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1100px;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Barra de Pasos */
+    .steps-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+    }
+
+.step-btn {
+      background: var(--card-sky);
+      border: 2px solid transparent;
+      border-radius: 3px;
+      padding: 8px 4px;
+      text-align: center;
+      /* Ajustes para alinear en la misma línea */
+      margin-left: 6px;
+      margin-right: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--navy-header);
+    }
+
+.step-btn:hover {
+      background: #9CD3EC;
+      transform: translateY(-2px);
+    }
+
+.step-btn .num {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      line-height: 24px;
+      border-radius: 50%;
+      background: var(--navy-header);
+      color: var(--white-sheet);
+      font-weight: 800;
+      font-size: 0.78rem;
+      /* Quitamos el margen inferior y agregamos margen derecho */
+      margin-bottom: 0;
+      margin-right: 6px;
+      flex-shrink: 0;
+    }
+
+.step-btn .label {
+      /* Cambiamos block por inline (o lo removemos) */
+      display: inline;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .step-btn.active {
+      background: var(--navy-header);
+      color: var(--white-sheet);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(25, 30, 82, 0.2);
+    }
+
+    .step-btn.active .num {
+      background: var(--orange-bright);
+      color: var(--white-sheet);
+    }
+
+    .step-btn.active .label {
+      color: var(--peach-title);
+    }
+
+    /* Tres Bloques Separados */
+    .stage-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .block-card {
+      background: var(--card-sky);
+      border-radius: 7px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(25, 30, 82, 0.07);
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+
+    .block-card.highlight {
+      border-color: var(--orange-bright);
+      box-shadow: 0 6px 18px rgba(250, 121, 15, 0.25);
+    }
+
+    .block-header {
+      background: var(--navy-header);
+      color: var(--white-sheet);
+      padding: 10px 14px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 700;
+      font-size: 0.92rem;
+    }
+
+    .block-header span {
+      color: var(--peach-title);
+    }
+
+    canvas {
+      width: 100%;
+      height: 250px;
+      background: var(--white-sheet);
+      border-radius: 4px;
+      border: 2px solid var(--sky-corner);
+      display: block;
+    }
+
+    .block-content {
+      font-size: 0.88rem;
+      line-height: 1.5;
+      color: var(--navy-header);
+      background: rgba(255, 255, 255, 0.7);
+      padding: 12px;
+      border-radius: 4px;
+      flex-grow: 1;
+      font-weight: 500;
+    }
+
+    /* Panel Explicativo Inferior */
+    .info-panel {
+      background: var(--card-sky);
+      border-radius: 7px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(25, 30, 82, 0.07);
+    }
+
+    .story-title {
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: var(--navy-header);
+      margin-bottom: 4px;
+    }
+
+    .story-text {
+      font-size: 0.94rem;
+      line-height: 1.55;
+      color: var(--navy-header);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      background: var(--bg-ice);
+      color: var(--navy-header);
+      border: 2px solid var(--navy-header);
+      padding: 8px 14px;
+      border-radius: 4px;
+      font-weight: 800;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--navy-header);
+      color: var(--white-sheet);
+    }
+
+    button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    button.primary {
+      background: var(--orange-bright);
+      border-color: var(--navy-header);
+      color: var(--white-sheet);
+    }
+
+    button.primary:hover:not(:disabled) {
+      background: var(--orange-deep);
+    }
+
+    @media (max-width: 900px) {
+      .stage-container { grid-template-columns: 1fr; }
+      .steps-bar { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>¿Cómo funciona ML-KEM?</h1>
+  </header>
+
+  <div class="app">
+    <!-- Barra de Pasos -->
+    <div class="steps-bar">
+      <div class="step-btn active" onclick="setStep(0)">
+        <span class="num">1</span>
+        <span class="label">KeyGen (Alice)</span>
+      </div>
+      <div class="step-btn" onclick="setStep(1)">
+        <span class="num">2</span>
+        <span class="label">Envío Pista Púb.</span>
+      </div>
+      <div class="step-btn" onclick="setStep(2)">
+        <span class="num">3</span>
+        <span class="label">Encaps (Bob)</span>
+      </div>
+      <div class="step-btn" onclick="setStep(3)">
+        <span class="num">4</span>
+        <span class="label">Envío Criptograma</span>
+      </div>
+      <div class="step-btn" onclick="setStep(4)">
+        <span class="num">5</span>
+        <span class="label">Decaps (Alice)</span>
+      </div>
+    </div>
+
+    <!-- TRES BLOQUES SEPARADOS -->
+    <div class="stage-container">
+      <!-- BLOQUE 1: ALICE -->
+      <div class="block-card" id="cardAlice">
+        <div class="block-header">
+          <span>👩‍💻 Bloque Alice</span>
+          <small>Receptora</small>
+        </div>
+        <canvas id="canvasAlice" width="320" height="250"></canvas>
+        <div class="block-content" id="descAlice">...</div>
+      </div>
+
+      <!-- BLOQUE 2: CANAL EN EL MEDIO -->
+      <div class="block-card" id="cardChannel">
+        <div class="block-header">
+          <span>🌐 Canal de Internet</span>
+          <small>Inseguro / Cuántico</small>
+        </div>
+        <canvas id="canvasChannel" width="320" height="250"></canvas>
+        <div class="block-content" id="descChannel">...</div>
+      </div>
+
+      <!-- BLOQUE 3: BOB -->
+      <div class="block-card" id="cardBob">
+        <div class="block-header">
+          <span>🧑‍💻 Bloque Bob</span>
+          <small>Emisor</small>
+        </div>
+        <canvas id="canvasBob" width="320" height="250"></canvas>
+        <div class="block-content" id="descBob">...</div>
+      </div>
+    </div>
+
+    <!-- Panel Explicativo Inferior -->
+    <div class="info-panel">
+      <div>
+        <div class="story-title" id="titleText"></div>
+        <p class="story-text" id="descText"></p>
+      </div>
+      <div class="controls">
+        <button id="prevBtn" onclick="prevStep()">◀ Anterior</button>
+        <button id="nextBtn" class="primary" onclick="nextStep()">Siguiente Paso ▶</button>
+        <button id="autoBtn" onclick="toggleAuto()">⏯ Auto-Reproducir</button>
+        <button onclick="setStep(0)">⏮ Reiniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const stepsData = [
+      {
+        title: "Paso 1: Generación de Claves en Alice (KeyGen)",
+        desc: "Alice elige un camino secreto en la grilla (su clave privada) y le suma un pequeño error aleatorio (ruido). El punto público resultante oculta la estructura matemática frente a computadoras cuánticas.",
+        aliceText: "🔑 Alice traza su Camino Secreto (línea oscura) y añade ruido al punto final para crear su Clave Pública (ek).",
+        channelText: "💤 Canal inactivo. Alice procesa su par de claves en su entorno privado.",
+        bobText: "⏳ En espera de recibir la clave pública de Alice para interactuar.",
+        activeBlock: "alice"
+      },
+      {
+        title: "Paso 2: Transmisión de la Pista Pública (ek)",
+        desc: "Alice envía su clave pública a través del canal inseguro. Un espía con un ordenador cuántico intercala el paquete, pero el ruido impide despejar la ecuación.",
+        aliceText: "📤 Envía la Pista Pública (ek) hacia el canal de internet.",
+        channelText: "🚀 Paquete en tránsito: La pista pública viaja por la red. El espía cuántico no puede invertir la operación por culpa del ruido.",
+        bobText: "📥 Recibe y procesa la pista pública enviada por Alice.",
+        activeBlock: "channel"
+      },
+      {
+        title: "Paso 3: Encapsulamiento en Bob (Encaps)",
+        desc: "Bob toma la pista pública de Alice, genera una clave secreta compartida y la cifra sumando su propia capa de ruido para armar el criptograma cifrado.",
+        aliceText: "💤 En espera de recibir el criptograma encapsulado por Bob.",
+        channelText: "💤 Canal inactivo mientras Bob procesa el encapsulamiento localmente.",
+        bobText: "📦 Bob genera su clave secreta y la encapsula combinándola con la pista de Alice + su propio ruido.",
+        activeBlock: "bob"
+      },
+      {
+        title: "Paso 4: Envío del Criptograma de Regreso",
+        desc: "Bob emite de vuelta el paquete cifrado (u, v) a través del canal público de internet con destino a Alice.",
+        aliceText: "📥 Recibe el criptograma encapsulado procedente del canal público.",
+        channelText: "🚀 Paquete en tránsito de retorno: Criptograma (u, v) viajando seguro de regreso a Alice.",
+        bobText: "📤 Envía el paquete cifrado de regreso hacia Alice.",
+        activeBlock: "channel"
+      },
+      {
+        title: "Paso 5: Desencapsulamiento y Efecto Imán (Decaps)",
+        desc: "Alice usa su secreto para cancelar la mayor parte de la fórmula. El pequeño ruido restante cae dentro del rango de tolerancia y se redondea limpiamente, obteniendo la misma clave secreta que Bob.",
+        aliceText: "🧲 Alice aplica su secreto, elimina el ruido residual mediante redondeo ('efecto imán') y recupera la Clave Secreta.",
+        channelText: "💤 Canal libre. La comunicación privada ha finalizado con éxito.",
+        bobText: "🔑 Posee exactamente la misma clave secreta compartida que Alice.",
+        activeBlock: "alice"
+      }
+    ];
+
+    let currentStep = 0;
+    let autoPlayTimer = null;
+    let tick = 0;
+
+    const ctxAlice = document.getElementById("canvasAlice").getContext("2d");
+    const ctxChannel = document.getElementById("canvasChannel").getContext("2d");
+    const ctxBob = document.getElementById("canvasBob").getContext("2d");
+
+    function setStep(idx) {
+      currentStep = idx;
+      tick = 0;
+
+      document.querySelectorAll(".step-btn").forEach((b, i) => {
+        b.classList.toggle("active", i === currentStep);
+      });
+
+      const s = stepsData[currentStep];
+      document.getElementById("titleText").textContent = s.title;
+      document.getElementById("descText").textContent = s.desc;
+      document.getElementById("descAlice").textContent = s.aliceText;
+      document.getElementById("descChannel").textContent = s.channelText;
+      document.getElementById("descBob").textContent = s.bobText;
+
+      document.getElementById("cardAlice").classList.toggle("highlight", s.activeBlock === "alice");
+      document.getElementById("cardChannel").classList.toggle("highlight", s.activeBlock === "channel");
+      document.getElementById("cardBob").classList.toggle("highlight", s.activeBlock === "bob");
+
+      document.getElementById("prevBtn").disabled = currentStep === 0;
+      document.getElementById("nextBtn").disabled = currentStep === stepsData.length - 1;
+    }
+
+    function nextStep() {
+      if (currentStep < stepsData.length - 1) setStep(currentStep + 1);
+    }
+
+    function prevStep() {
+      if (currentStep > 0) setStep(currentStep - 1);
+    }
+
+    function toggleAuto() {
+      const btn = document.getElementById("autoBtn");
+      if (autoPlayTimer) {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = null;
+        btn.textContent = "⏯ Auto-Reproducir";
+      } else {
+        btn.textContent = "⏸ Pausar";
+        autoPlayTimer = setInterval(() => {
+          setStep((currentStep + 1) % stepsData.length);
+        }, 4200);
+      }
+    }
+
+    function renderLoop() {
+      tick += 0.035;
+
+      // ----------------------------------------------------
+      // 1. BLOQUE ALICE
+      // ----------------------------------------------------
+      ctxAlice.clearRect(0, 0, 320, 250);
+      drawGrid(ctxAlice, 320, 250);
+
+      if (currentStep === 0) {
+        // Dibuja el camino secreto escalonado en Alice
+        ctxAlice.strokeStyle = "#191E52";
+        ctxAlice.lineWidth = 3;
+        ctxAlice.beginPath();
+        ctxAlice.moveTo(40, 210);
+        ctxAlice.lineTo(110, 210);
+        ctxAlice.lineTo(110, 120);
+        ctxAlice.lineTo(180, 120);
+        ctxAlice.stroke();
+
+        drawDot(ctxAlice, 40, 210, "#7DC4EA", 5, "Inicio");
+        drawDot(ctxAlice, 180, 120, "#FA790F", 7, "Secreto");
+
+        // Punto con ruido oscilante
+        const wx = 180 + Math.cos(tick * 2.5) * 8;
+        const wy = 120 + Math.sin(tick * 2.5) * 8;
+        drawDot(ctxAlice, wx, wy, "#F25207", 6, "Pista + Ruido");
+      } else if (currentStep === 4) {
+        // Efecto imán / redondeo en Alice
+        const snap = (Math.sin(tick * 2) + 1) / 2;
+        const px = 200 - snap * 20;
+        const py = 125;
+
+        ctxAlice.fillStyle = "rgba(174, 221, 242, 0.45)";
+        ctxAlice.beginPath(); 
+        ctxAlice.arc(180, 125, 45, 0, Math.PI * 2); 
+        ctxAlice.fill();
+
+        drawDot(ctxAlice, px, py, "#FA790F", 9, "🔑 Clave Recuperada");
+      } else {
+        // Estado pasivo en Alice
+        ctxAlice.strokeStyle = "#191E52";
+        ctxAlice.lineWidth = 2;
+        ctxAlice.beginPath();
+        ctxAlice.moveTo(40, 210);
+        ctxAlice.lineTo(110, 210);
+        ctxAlice.lineTo(110, 120);
+        ctxAlice.lineTo(180, 120);
+        ctxAlice.stroke();
+        drawDot(ctxAlice, 180, 120, "#7DC4EA", 6, "Clave Pública ek");
+      }
+
+      // ----------------------------------------------------
+      // 2. BLOQUE CANAL
+      // ----------------------------------------------------
+      ctxChannel.clearRect(0, 0, 320, 250);
+      drawChannelBG(ctxChannel);
+
+      if (currentStep === 1) {
+        const prog = Math.min(1, (tick % 3) / 1.8);
+        const posX = 30 + prog * 260;
+        drawPacket(ctxChannel, posX, 110, "🔓 Pista Pública");
+        drawHacker(ctxChannel, 160, 185);
+      } else if (currentStep === 3) {
+        const prog = Math.min(1, (tick % 3) / 1.8);
+        const posX = 290 - prog * 260;
+        drawPacket(ctxChannel, posX, 110, "🔒 Criptograma");
+        drawHacker(ctxChannel, 160, 185);
+      } else {
+        ctxChannel.fillStyle = "#164070";
+        ctxChannel.font = "600 11.5px Segoe UI";
+        ctxChannel.fillText("Canal seguro contra ataques cuánticos", 45, 125);
+      }
+
+      // ----------------------------------------------------
+      // 3. BLOQUE BOB
+      // ----------------------------------------------------
+      ctxBob.clearRect(0, 0, 320, 250);
+      drawGrid(ctxBob, 320, 250);
+
+      if (currentStep === 2 || currentStep === 3) {
+        drawDot(ctxBob, 160, 125, "#FA790F", 9, "📦 Cápsula Cifrada");
+        ctxBob.strokeStyle = "#F25207";
+        ctxBob.lineWidth = 2;
+        ctxBob.setLineDash([4, 4]);
+        ctxBob.beginPath();
+        ctxBob.arc(160, 125, 32 + Math.sin(tick * 3) * 4, 0, Math.PI * 2);
+        ctxBob.stroke();
+        ctxBob.setLineDash([]);
+      } else if (currentStep === 4) {
+        drawDot(ctxBob, 160, 125, "#FA790F", 9, "🔑 Misma Clave Compartida");
+      } else {
+        ctxBob.fillStyle = "#7DC4EA";
+        ctxBob.font = "600 12px Segoe UI";
+        ctxBob.fillText("Esperando datos de Alice...", 80, 125);
+      }
+
+      requestAnimationFrame(renderLoop);
+    }
+
+    function drawGrid(ctx, w, h) {
+      ctx.strokeStyle = "#D6E6F3";
+      ctx.lineWidth = 1;
+      for (let x = 30; x < w; x += 35) {
+        ctx.beginPath(); ctx.moveTo(x, 20); ctx.lineTo(x, h - 20); ctx.stroke();
+      }
+      for (let y = 30; y < h; y += 35) {
+        ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(w - 20, y); ctx.stroke();
+      }
+      ctx.fillStyle = "#7DC4EA";
+      for (let x = 30; x < w; x += 35) {
+        for (let y = 30; y < h; y += 35) {
+          ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    }
+
+    function drawChannelBG(ctx) {
+      ctx.strokeStyle = "#D6E6F3";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath(); ctx.moveTo(160, 20); ctx.lineTo(160, 230); ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "#164070";
+      ctx.font = "700 11px Segoe UI";
+      ctx.fillText("📡 Tráfico por Internet", 98, 24);
+    }
+
+    function drawPacket(ctx, x, y, text) {
+      ctx.fillStyle = "#191E52";
+      ctx.strokeStyle = "#FA790F";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(x - 62, y - 18, 124, 36, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#F5A25D";
+      ctx.font = "700 11.5px Segoe UI";
+      ctx.fillText(text, x - 50, y + 4);
+    }
+
+    function drawHacker(ctx, x, y) {
+      ctx.fillStyle = "#F25207";
+      ctx.font = "700 11px Segoe UI";
+      ctx.fillText("🤖 Espía Cuántico (Atascado)", x - 75, y);
+    }
+
+    function drawDot(ctx, x, y, color, radius, label) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      if (label) {
+        ctx.fillStyle = "#191E52";
+        ctx.font = "700 11px Segoe UI";
+        ctx.fillText(label, x - 35, y - radius - 6);
+      }
+    }
+
+    setStep(0);
+    renderLoop();
+  </script>
+</body>
+</html>
