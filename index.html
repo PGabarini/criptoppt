@@ -6,15 +6,34 @@
   <title>¿Cómo funciona ML-KEM? — Visualización Completa por Bloques</title>
   <style>
     :root {
-      --navy-header: #010212;     
-      --navy-mid: #164070;        
-      --peach-title: #F5A25D;     
-      --bg-ice: #e1edf7;          
-      --card-sky: #AEDDF2;        
-      --sky-corner: #45ace4;      
-      --white-sheet: #FFFFFF;     
-      --orange-bright: #FA790F;   
-      --orange-deep: #F25207;     
+      /* Base: navy profundo, superficies frías y texto de alto contraste. */
+      --ink: #06162c;            /* texto principal y cabeceras */
+      --ink-muted: #33506B;      /* texto secundario */
+      --page: #F3F7FB;           /* fondo de la página */
+      --surface: #FFFFFF;        /* tarjetas y lienzos */
+      --surface-soft: #c2dbf4;   /* paneles y tarjetas de bloque */
+      --surface-hover: #D5E5F3;  /* hover de controles */
+      --border: #C4D7E8;         /* bordes suaves */
+      --border-strong: #8FB3D1;  /* bordes de lienzos */
+      --on-dark-muted: #D7E3EF;  /* texto secundario sobre navy */
+
+      /* Acentos semánticos: un color por concepto. */
+      --accent: #D97706;         /* acciones y foco (ámbar) */
+      --accent-strong: #B45309;  /* hover de acciones */
+      --accent-soft: #FDE68A;    /* títulos sobre navy */
+      --info: #2563EB;           /* información pública */
+      --secret: #B45309;         /* clave / secreto */
+      --noise: #DC2626;          /* ruido / error */
+      --path: #334155;           /* camino secreto */
+      --spy: #7C3AED;            /* espía cuántico */
+      --success: #047857;        /* canal seguro */
+      --white: #FFFFFF;
+
+      /* Lienzos */
+      --grid: #E2E8F0;
+      --grid-dot: #CBD5E1;
+      --packet: #0F172A;
+      --packet-text: #FDE68A;
     }
 
     * {
@@ -25,8 +44,8 @@
     }
 
     body {
-      background-color: var(--bg-ice);
-      color: var(--navy-header);
+      background-color: var(--page);
+      color: var(--ink);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -36,24 +55,25 @@
 
     header {
       width: 100%;
-      background-color: var(--navy-header);
+      background-color: var(--ink);
       text-align: center;
       padding: 19px 14px 16px;
       margin-bottom: 15px;
-      box-shadow: 0 4px 12px rgba(25, 30, 82, 0.15);
+      border-bottom: 3px solid var(--accent);
+      box-shadow: 0 4px 12px rgba(11, 31, 58, 0.18);
     }
 
     h1 {
       font-size: 1.85rem;
       font-weight: 900;
-      color: var(--peach-title);
+      color: var(--accent-soft);
       text-transform: uppercase;
       letter-spacing: 0.04em;
       margin-bottom: 4px;
     }
 
     .subtitle {
-      color: var(--bg-ice);
+      color: var(--on-dark-muted);
       font-size: 0.95rem;
       font-weight: 500;
     }
@@ -76,7 +96,7 @@
 
 .step-btn {
       appearance: none;
-      background: var(--card-sky);
+      background: var(--surface-soft);
       border: 2px solid transparent;
       border-radius: 3px;
       padding: 8px 4px;
@@ -89,12 +109,13 @@
       justify-content: center;
       cursor: pointer;
       transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-      color: var(--navy-header);
+      color: var(--ink);
       font: inherit;
     }
 
 .step-btn:hover {
-      background: #9CD3EC;
+      background: var(--surface-hover);
+      border-color: var(--border-strong);
       transform: translateY(-2px);
     }
 
@@ -104,8 +125,8 @@
       height: 24px;
       line-height: 24px;
       border-radius: 50%;
-      background: var(--navy-header);
-      color: var(--white-sheet);
+      background: var(--ink);
+      color: var(--white);
       font-weight: 800;
       font-size: 0.78rem;
       /* Quitamos el margen inferior y agregamos margen derecho */
@@ -122,19 +143,19 @@
     }
 
     .step-btn.active {
-      background: var(--navy-header);
-      color: var(--white-sheet);
+      background: var(--ink);
+      color: var(--white);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(25, 30, 82, 0.2);
+      box-shadow: 0 4px 12px rgba(11, 31, 58, 0.24);
     }
 
     .step-btn.active .num {
-      background: var(--orange-bright);
-      color: var(--navy-header);
+      background: var(--accent);
+      color: var(--ink);
     }
 
     .step-btn.active .label {
-      color: var(--peach-title);
+      color: var(--accent-soft);
     }
 
     /* Tres Bloques Separados */
@@ -146,25 +167,25 @@
     }
 
     .block-card {
-      background: var(--card-sky);
+      background: var(--surface-soft);
       border-radius: 7px;
       padding: 16px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 4px 12px rgba(25, 30, 82, 0.07);
-      border: 2px solid transparent;
+      box-shadow: 0 4px 12px rgba(11, 31, 58, 0.08);
+      border: 2px solid var(--border);
       transition: all 0.3s ease;
     }
 
     .block-card.highlight {
-      border-color: var(--orange-bright);
-      box-shadow: 0 6px 18px rgba(250, 121, 15, 0.25);
+      border-color: var(--accent);
+      box-shadow: 0 6px 18px rgba(217, 119, 6, 0.22);
     }
 
     .block-header {
-      background: var(--navy-header);
-      color: var(--white-sheet);
+      background: var(--ink);
+      color: var(--white);
       padding: 10px 14px;
       border-radius: 4px;
       display: flex;
@@ -175,24 +196,25 @@
     }
 
     .block-header span {
-      color: var(--peach-title);
+      color: var(--accent-soft);
     }
 
     canvas {
       width: 100%;
       height: auto;
       aspect-ratio: 320 / 250;
-      background: var(--white-sheet);
+      background: var(--white);
       border-radius: 4px;
-      border: 2px solid var(--sky-corner);
+      border: 2px solid var(--border-strong);
       display: block;
     }
 
     .block-content {
       font-size: 0.88rem;
       line-height: 1.5;
-      color: var(--navy-header);
-      background: rgba(255, 255, 255, 0.7);
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid var(--border);
       padding: 12px;
       border-radius: 4px;
       flex-grow: 1;
@@ -201,26 +223,27 @@
 
     /* Panel Explicativo Inferior */
     .info-panel {
-      background: var(--card-sky);
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
       border-radius: 7px;
       padding: 18px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: 0 4px 12px rgba(25, 30, 82, 0.07);
+      box-shadow: 0 4px 12px rgba(11, 31, 58, 0.08);
     }
 
     .story-title {
       font-size: 1.12rem;
       font-weight: 800;
-      color: var(--navy-header);
+      color: var(--ink);
       margin-bottom: 4px;
     }
 
     .story-text {
       font-size: 0.94rem;
       line-height: 1.55;
-      color: var(--navy-header);
+      color: var(--ink);
       margin-bottom: 12px;
       font-weight: 500;
     }
@@ -233,9 +256,9 @@
     }
 
     .controls button {
-      background: var(--bg-ice);
-      color: var(--navy-header);
-      border: 2px solid var(--navy-header);
+      background: var(--surface);
+      color: var(--ink);
+      border: 2px solid var(--ink);
       padding: 8px 14px;
       border-radius: 4px;
       font-weight: 800;
@@ -245,8 +268,8 @@
     }
 
     .controls button:hover:not(:disabled) {
-      background: var(--navy-header);
-      color: var(--white-sheet);
+      background: var(--ink);
+      color: var(--white);
     }
 
     .controls button:disabled {
@@ -255,26 +278,26 @@
     }
 
     .controls button.primary {
-      background: var(--orange-bright);
-      border-color: var(--navy-header);
-      color: var(--navy-header);
+      background: var(--accent);
+      border-color: var(--ink);
+      color: var(--ink);
     }
 
     .controls button.primary:hover:not(:disabled) {
-      background: var(--orange-deep);
-      color: var(--navy-header);
+      background: var(--accent-strong);
+      color: var(--white);
     }
 
     .step-btn:focus-visible,
     .controls button:focus-visible {
-      outline: 3px solid var(--navy-header);
+      outline: 3px solid var(--ink);
       outline-offset: 2px;
     }
 
     .shortcuts-hint {
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--navy-mid);
+      color: var(--ink-muted);
       opacity: 0.85;
     }
 
@@ -284,11 +307,12 @@
       align-items: center;
       gap: 6px 18px;
       padding: 8px 14px;
-      background: rgba(255, 255, 255, 0.55);
+      background: rgba(255, 255, 255, 0.8);
+      border: 1px solid var(--border);
       border-radius: 4px;
       font-size: 0.78rem;
       font-weight: 600;
-      color: var(--navy-header);
+      color: var(--ink);
     }
 
     .legend-item {
@@ -305,15 +329,17 @@
       flex-shrink: 0;
     }
 
-    .legend-dot.public { background: #7DC4EA; }
-    .legend-dot.secret { background: var(--orange-bright); }
-    .legend-dot.noise { background: var(--orange-deep); }
+    .legend-dot.public { background: var(--info); }
+    .legend-dot.secret { background: var(--secret); }
+    .legend-dot.noise { background: var(--noise); }
+    .legend-dot.spy { background: var(--spy); }
+    .legend-dot.success { background: var(--success); }
 
     .legend-line {
       width: 18px;
       height: 3px;
       border-radius: 2px;
-      background: var(--navy-header);
+      background: var(--path);
       display: inline-block;
       flex-shrink: 0;
     }
@@ -336,7 +362,7 @@
       }
 
       body {
-        background: #FFFFFF;
+        background: var(--white);
         padding: 0;
       }
 
@@ -453,6 +479,8 @@
       <span class="legend-item"><span class="legend-dot secret" aria-hidden="true"></span>Clave / secreto</span>
       <span class="legend-item"><span class="legend-dot noise" aria-hidden="true"></span>Ruido</span>
       <span class="legend-item"><span class="legend-line" aria-hidden="true"></span>Camino secreto</span>
+      <span class="legend-item"><span class="legend-dot spy" aria-hidden="true"></span>Espía cuántico</span>
+      <span class="legend-item"><span class="legend-dot success" aria-hidden="true"></span>Canal seguro</span>
     </div>
 
     <!-- Panel Explicativo Inferior -->
@@ -542,6 +570,25 @@
     const STEP_DURATION = 4200; // ms que dura cada paso en reproducción automática
     const STATIC_TICK = 2.4;    // fotograma final que se usa con "reducir movimiento"
     const CANVAS_FONT = "'Segoe UI', system-ui, -apple-system, sans-serif";
+
+    // Paleta de los diagramas. Cada concepto tiene un color propio y
+    // coincide con los tokens CSS de la leyenda.
+    const COLORS = {
+      ink: "#0B1F3A",
+      muted: "#33506B",
+      grid: "#E2E8F0",
+      gridDot: "#CBD5E1",
+      public: "#2563EB",
+      secret: "#B45309",
+      accent: "#D97706",
+      noise: "#DC2626",
+      path: "#334155",
+      packet: "#0F172A",
+      packetText: "#FDE68A",
+      spy: "#7C3AED",
+      success: "#047857",
+      white: "#FFFFFF"
+    };
 
     let needsRedraw = true;
 
@@ -803,7 +850,7 @@
         const trace = Math.min(1, tick / 1.2);
         const pathLength = 230;
 
-        ctxAlice.strokeStyle = "#191E52";
+        ctxAlice.strokeStyle = COLORS.path;
         ctxAlice.lineWidth = 3;
         ctxAlice.lineJoin = "round";
         ctxAlice.setLineDash([pathLength * trace, pathLength]);
@@ -815,15 +862,15 @@
         ctxAlice.stroke();
         ctxAlice.setLineDash([]);
 
-        drawDot(ctxAlice, 40, 210, "#7DC4EA", 5, "Inicio");
+        drawDot(ctxAlice, 40, 210, COLORS.public, 5, "Inicio");
 
         if (trace >= 1) {
-          drawDot(ctxAlice, 180, 120, "#FA790F", 7, "Secreto");
+          drawDot(ctxAlice, 180, 120, COLORS.secret, 7, "Secreto");
 
           // Punto con ruido oscilante alrededor del punto secreto
           const wx = 180 + Math.cos(tick * 2.5) * 8;
           const wy = 120 + Math.sin(tick * 2.5) * 8;
-          drawDot(ctxAlice, wx, wy, "#F25207", 6, "Pista + Ruido", 26);
+          drawDot(ctxAlice, wx, wy, COLORS.noise, 6, "Pista + Ruido", 26);
         }
       } else if (currentStep === 4) {
         // Efecto imán: el punto con ruido se acerca y se asienta sobre la clave
@@ -832,13 +879,13 @@
         const px = 208 - 28 * ease;
         const py = 125;
 
-        ctxAlice.fillStyle = "rgba(174, 221, 242, 0.45)";
+        ctxAlice.fillStyle = "rgba(180, 83, 9, 0.12)";
         ctxAlice.beginPath();
         ctxAlice.arc(180, 125, 45, 0, Math.PI * 2);
         ctxAlice.fill();
 
         // Anillo que se contrae mientras el ruido es absorbido
-        ctxAlice.strokeStyle = "rgba(250, 121, 15, 0.65)";
+        ctxAlice.strokeStyle = "rgba(180, 83, 9, 0.55)";
         ctxAlice.lineWidth = 2;
         ctxAlice.beginPath();
         ctxAlice.arc(180, 125, 45 - 20 * ease, 0, Math.PI * 2);
@@ -847,7 +894,7 @@
         drawSharedKey(ctxAlice, px, py, tick, "🔑 Clave recuperada");
       } else {
         // Estado pasivo en Alice
-        ctxAlice.strokeStyle = "#191E52";
+        ctxAlice.strokeStyle = COLORS.path;
         ctxAlice.lineWidth = 2;
         ctxAlice.beginPath();
         ctxAlice.moveTo(40, 210);
@@ -855,7 +902,7 @@
         ctxAlice.lineTo(110, 120);
         ctxAlice.lineTo(180, 120);
         ctxAlice.stroke();
-        drawDot(ctxAlice, 180, 120, "#7DC4EA", 6, "Clave Pública ek");
+        drawDot(ctxAlice, 180, 120, COLORS.public, 6, "Clave Pública ek");
       }
 
       // ----------------------------------------------------
@@ -880,7 +927,7 @@
         drawPacket(ctxChannel, posX, 110, currentStep === 1 ? "🔓 Pista Pública" : "🔒 Criptograma");
         drawHacker(ctxChannel, 160, 185, posX);
       } else {
-        ctxChannel.fillStyle = "#164070";
+        ctxChannel.fillStyle = COLORS.success;
         ctxChannel.font = `600 11.5px ${CANVAS_FONT}`;
         ctxChannel.fillText("Canal seguro contra ataques cuánticos", 45, 125);
       }
@@ -897,7 +944,7 @@
         if (arrive < 1) {
           const ease = 1 - Math.pow(1 - arrive, 3);
           const x = 50 + (160 - 50) * ease;
-          drawDot(ctxBob, x, 125, "#7DC4EA", 7, "📥 ek recibida");
+          drawDot(ctxBob, x, 125, COLORS.public, 7, "📥 ek recibida");
         } else {
           drawCapsule(ctxBob, tick - 1.2);
         }
@@ -906,7 +953,7 @@
       } else if (currentStep === 4) {
         drawSharedKey(ctxBob, 160, 125, tick, "🔑 Misma clave");
       } else {
-        ctxBob.fillStyle = "#164070";
+        ctxBob.fillStyle = COLORS.muted;
         ctxBob.font = `600 12px ${CANVAS_FONT}`;
         ctxBob.fillText("Esperando datos de Alice...", 80, 125);
       }
