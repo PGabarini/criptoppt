@@ -75,6 +75,7 @@
     }
 
 .step-btn {
+      appearance: none;
       background: var(--card-sky);
       border: 2px solid transparent;
       border-radius: 3px;
@@ -87,8 +88,9 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
       color: var(--navy-header);
+      font: inherit;
     }
 
 .step-btn:hover {
@@ -128,7 +130,7 @@
 
     .step-btn.active .num {
       background: var(--orange-bright);
-      color: var(--white-sheet);
+      color: var(--navy-header);
     }
 
     .step-btn.active .label {
@@ -178,7 +180,8 @@
 
     canvas {
       width: 100%;
-      height: 250px;
+      height: auto;
+      aspect-ratio: 320 / 250;
       background: var(--white-sheet);
       border-radius: 4px;
       border: 2px solid var(--sky-corner);
@@ -229,7 +232,7 @@
       flex-wrap: wrap;
     }
 
-    button {
+    .controls button {
       background: var(--bg-ice);
       color: var(--navy-header);
       border: 2px solid var(--navy-header);
@@ -238,32 +241,142 @@
       font-weight: 800;
       font-size: 0.84rem;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
     }
 
-    button:hover:not(:disabled) {
+    .controls button:hover:not(:disabled) {
       background: var(--navy-header);
       color: var(--white-sheet);
     }
 
-    button:disabled {
+    .controls button:disabled {
       opacity: 0.35;
       cursor: not-allowed;
     }
 
-    button.primary {
+    .controls button.primary {
       background: var(--orange-bright);
       border-color: var(--navy-header);
-      color: var(--white-sheet);
+      color: var(--navy-header);
     }
 
-    button.primary:hover:not(:disabled) {
+    .controls button.primary:hover:not(:disabled) {
       background: var(--orange-deep);
+      color: var(--navy-header);
+    }
+
+    .step-btn:focus-visible,
+    .controls button:focus-visible {
+      outline: 3px solid var(--navy-header);
+      outline-offset: 2px;
+    }
+
+    .shortcuts-hint {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--navy-mid);
+      opacity: 0.85;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 18px;
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.55);
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--navy-header);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .legend-dot.public { background: #7DC4EA; }
+    .legend-dot.secret { background: var(--orange-bright); }
+    .legend-dot.noise { background: var(--orange-deep); }
+
+    .legend-line {
+      width: 18px;
+      height: 3px;
+      border-radius: 2px;
+      background: var(--navy-header);
+      display: inline-block;
+      flex-shrink: 0;
     }
 
     @media (max-width: 900px) {
       .stage-container { grid-template-columns: 1fr; }
       .steps-bar { grid-template-columns: 1fr 1fr; }
+      .step-btn:last-child { grid-column: 1 / -1; }
+      canvas { max-width: 360px; margin: 0 auto; }
+    }
+
+    @media print {
+      @page { margin: 12mm; }
+
+      *,
+      *::before,
+      *::after {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      body {
+        background: #FFFFFF;
+        padding: 0;
+      }
+
+      header { box-shadow: none; }
+
+      .app {
+        max-width: none;
+        padding: 0;
+      }
+
+      .controls,
+      .shortcuts-hint {
+        display: none !important;
+      }
+
+      .block-card,
+      .info-panel,
+      .legend {
+        box-shadow: none;
+      }
+
+      .stage-container,
+      .info-panel {
+        break-inside: avoid;
+      }
+    }
+
+    :fullscreen .app {
+      max-width: 1500px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
     }
   </style>
 </head>
@@ -275,28 +388,28 @@
 
   <div class="app">
     <!-- Barra de Pasos -->
-    <div class="steps-bar">
-      <div class="step-btn active" onclick="setStep(0)">
+    <nav class="steps-bar" aria-label="Pasos de la demostración">
+      <button type="button" class="step-btn active" onclick="goToStep(0)" aria-current="step">
         <span class="num">1</span>
         <span class="label">KeyGen (Alice)</span>
-      </div>
-      <div class="step-btn" onclick="setStep(1)">
+      </button>
+      <button type="button" class="step-btn" onclick="goToStep(1)">
         <span class="num">2</span>
         <span class="label">Envío Pista Púb.</span>
-      </div>
-      <div class="step-btn" onclick="setStep(2)">
+      </button>
+      <button type="button" class="step-btn" onclick="goToStep(2)">
         <span class="num">3</span>
         <span class="label">Encaps (Bob)</span>
-      </div>
-      <div class="step-btn" onclick="setStep(3)">
+      </button>
+      <button type="button" class="step-btn" onclick="goToStep(3)">
         <span class="num">4</span>
         <span class="label">Envío Criptograma</span>
-      </div>
-      <div class="step-btn" onclick="setStep(4)">
+      </button>
+      <button type="button" class="step-btn" onclick="goToStep(4)">
         <span class="num">5</span>
         <span class="label">Decaps (Alice)</span>
-      </div>
-    </div>
+      </button>
+    </nav>
 
     <!-- TRES BLOQUES SEPARADOS -->
     <div class="stage-container">
@@ -306,7 +419,8 @@
           <span>👩‍💻 Bloque Alice</span>
           <small>Receptora</small>
         </div>
-        <canvas id="canvasAlice" width="320" height="250"></canvas>
+        <canvas id="canvasAlice" width="320" height="250" role="img"
+          aria-label="Diagrama de Alice: camino secreto y ruido">Diagrama de Alice</canvas>
         <div class="block-content" id="descAlice">...</div>
       </div>
 
@@ -316,7 +430,8 @@
           <span>🌐 Canal de Internet</span>
           <small>Inseguro / Cuántico</small>
         </div>
-        <canvas id="canvasChannel" width="320" height="250"></canvas>
+        <canvas id="canvasChannel" width="320" height="250" role="img"
+          aria-label="Diagrama del canal: inactivo">Diagrama del canal de internet</canvas>
         <div class="block-content" id="descChannel">...</div>
       </div>
 
@@ -326,23 +441,34 @@
           <span>🧑‍💻 Bloque Bob</span>
           <small>Emisor</small>
         </div>
-        <canvas id="canvasBob" width="320" height="250"></canvas>
+        <canvas id="canvasBob" width="320" height="250" role="img"
+          aria-label="Diagrama de Bob: en espera">Diagrama de Bob</canvas>
         <div class="block-content" id="descBob">...</div>
       </div>
     </div>
 
+    <!-- Leyenda de colores -->
+    <div class="legend" role="group" aria-label="Leyenda de colores">
+      <span class="legend-item"><span class="legend-dot public" aria-hidden="true"></span>Información pública</span>
+      <span class="legend-item"><span class="legend-dot secret" aria-hidden="true"></span>Clave / secreto</span>
+      <span class="legend-item"><span class="legend-dot noise" aria-hidden="true"></span>Ruido</span>
+      <span class="legend-item"><span class="legend-line" aria-hidden="true"></span>Camino secreto</span>
+    </div>
+
     <!-- Panel Explicativo Inferior -->
     <div class="info-panel">
-      <div>
+      <div aria-live="polite" aria-atomic="true">
         <div class="story-title" id="titleText"></div>
         <p class="story-text" id="descText"></p>
       </div>
-      <div class="controls">
+      <div class="controls" role="group" aria-label="Controles de la presentación">
         <button id="prevBtn" onclick="prevStep()">◀ Anterior</button>
         <button id="nextBtn" class="primary" onclick="nextStep()">Siguiente Paso ▶</button>
         <button id="autoBtn" onclick="toggleAuto()">⏯ Auto-Reproducir</button>
-        <button onclick="setStep(0)">⏮ Reiniciar</button>
+        <button onclick="goToStep(0)">⏮ Reiniciar</button>
+        <button id="fullscreenBtn" onclick="toggleFullscreen()">⛶ Pantalla completa</button>
       </div>
+      <small class="shortcuts-hint">Atajos: ← → navegar · Espacio play/pausa · Inicio reiniciar · F pantalla completa</small>
     </div>
   </div>
 
@@ -354,14 +480,20 @@
         aliceText: "🔑 Alice traza su Camino Secreto (línea oscura) y añade ruido al punto final para crear su Clave Pública (ek).",
         channelText: "💤 Canal inactivo. Alice procesa su par de claves en su entorno privado.",
         bobText: "⏳ En espera de recibir la clave pública de Alice para interactuar.",
+        aliceAlt: "Camino secreto trazado en la grilla, con el punto final rodeado de ruido.",
+        channelAlt: "Canal de internet inactivo.",
+        bobAlt: "Bob espera la clave pública de Alice.",
         activeBlock: "alice"
       },
       {
         title: "Paso 2: Transmisión de la Pista Pública (ek)",
-        desc: "Alice envía su clave pública a través del canal inseguro. Un espía con un ordenador cuántico intercala el paquete, pero el ruido impide despejar la ecuación.",
+        desc: "Alice envía su clave pública a través del canal inseguro. Un espía con un ordenador cuántico intenta interceptar el paquete, pero el ruido le impide despejar la ecuación.",
         aliceText: "📤 Envía la Pista Pública (ek) hacia el canal de internet.",
-        channelText: "🚀 Paquete en tránsito: La pista pública viaja por la red. El espía cuántico no puede invertir la operación por culpa del ruido.",
+        channelText: "🚀 Paquete en tránsito: la pista pública viaja por la red. El espía cuántico intenta interceptarla, pero el ruido se lo impide.",
         bobText: "📥 Recibe y procesa la pista pública enviada por Alice.",
+        aliceAlt: "Alice muestra su clave pública en la grilla.",
+        channelAlt: "Paquete con la pista pública viajando de Alice hacia Bob.",
+        bobAlt: "Bob espera recibir la pista pública.",
         activeBlock: "channel"
       },
       {
@@ -369,15 +501,21 @@
         desc: "Bob toma la pista pública de Alice, genera una clave secreta compartida y la cifra sumando su propia capa de ruido para armar el criptograma cifrado.",
         aliceText: "💤 En espera de recibir el criptograma encapsulado por Bob.",
         channelText: "💤 Canal inactivo mientras Bob procesa el encapsulamiento localmente.",
-        bobText: "📦 Bob genera su clave secreta y la encapsula combinándola con la pista de Alice + su propio ruido.",
+        bobText: "📦 Tras recibir ek, Bob genera su clave secreta y la encapsula combinándola con la pista de Alice + su propio ruido.",
+        aliceAlt: "Alice espera el criptograma.",
+        channelAlt: "Canal de internet inactivo.",
+        bobAlt: "Bob encapsula la clave secreta en una cápsula cifrada.",
         activeBlock: "bob"
       },
       {
         title: "Paso 4: Envío del Criptograma de Regreso",
         desc: "Bob emite de vuelta el paquete cifrado (u, v) a través del canal público de internet con destino a Alice.",
         aliceText: "📥 Recibe el criptograma encapsulado procedente del canal público.",
-        channelText: "🚀 Paquete en tránsito de retorno: Criptograma (u, v) viajando seguro de regreso a Alice.",
+        channelText: "🚀 Paquete en tránsito de retorno: el criptograma (u, v) viaja de regreso a Alice. El canal sigue siendo inseguro, pero el contenido va cifrado.",
         bobText: "📤 Envía el paquete cifrado de regreso hacia Alice.",
+        aliceAlt: "Alice espera recibir el criptograma.",
+        channelAlt: "Criptograma viajando de Bob hacia Alice.",
+        bobAlt: "Bob envía la cápsula cifrada.",
         activeBlock: "channel"
       },
       {
@@ -386,24 +524,93 @@
         aliceText: "🧲 Alice aplica su secreto, elimina el ruido residual mediante redondeo ('efecto imán') y recupera la Clave Secreta.",
         channelText: "💤 Canal libre. La comunicación privada ha finalizado con éxito.",
         bobText: "🔑 Posee exactamente la misma clave secreta compartida que Alice.",
+        aliceAlt: "Efecto imán: el ruido se asienta sobre la clave recuperada.",
+        channelAlt: "Canal de internet inactivo, comunicación finalizada.",
+        bobAlt: "Bob muestra la misma clave secreta compartida.",
         activeBlock: "alice"
       }
     ];
 
     let currentStep = 0;
     let autoPlayTimer = null;
-    let tick = 0;
+    let tick = 0;            // reloj de animación (en "unidades")
+    let lastFrameTime = 0;
 
-    const ctxAlice = document.getElementById("canvasAlice").getContext("2d");
-    const ctxChannel = document.getElementById("canvasChannel").getContext("2d");
-    const ctxBob = document.getElementById("canvasBob").getContext("2d");
+    const LOGICAL_W = 320;   // sistema de coordenadas usado por todos los dibujos
+    const LOGICAL_H = 250;
+    const TICK_SPEED = 2.1;  // unidades por segundo (independiente de los FPS)
+    const STEP_DURATION = 4200; // ms que dura cada paso en reproducción automática
+    const STATIC_TICK = 2.4;    // fotograma final que se usa con "reducir movimiento"
+    const CANVAS_FONT = "'Segoe UI', system-ui, -apple-system, sans-serif";
+
+    let needsRedraw = true;
+
+    // Respeta la preferencia del sistema de reducir animaciones.
+    const motionQuery = window.matchMedia
+      ? window.matchMedia("(prefers-reduced-motion: reduce)")
+      : null;
+    let reducedMotion = motionQuery ? motionQuery.matches : false;
+
+    if (motionQuery) {
+      const onMotionChange = (e) => {
+        reducedMotion = e.matches;
+        if (reducedMotion) tick = STATIC_TICK;
+        needsRedraw = true;
+      };
+      if (motionQuery.addEventListener) motionQuery.addEventListener("change", onMotionChange);
+      else if (motionQuery.addListener) motionQuery.addListener(onMotionChange);
+    }
+
+    const canvasAlice = document.getElementById("canvasAlice");
+    const canvasChannel = document.getElementById("canvasChannel");
+    const canvasBob = document.getElementById("canvasBob");
+    const ctxAlice = canvasAlice.getContext("2d");
+    const ctxChannel = canvasChannel.getContext("2d");
+    const ctxBob = canvasBob.getContext("2d");
+
+    // Ajusta la resolución real de cada canvas a su tamaño en pantalla
+    // (nítido en pantallas HiDPI y sin deformar el dibujo al redimensionar).
+    function resizeCanvases() {
+      const dpr = window.devicePixelRatio || 1;
+      [[canvasAlice, ctxAlice], [canvasChannel, ctxChannel], [canvasBob, ctxBob]].forEach(([canvas, ctx]) => {
+        const cssW = canvas.clientWidth || LOGICAL_W;
+        const cssH = canvas.clientHeight || LOGICAL_H;
+        const bw = Math.max(1, Math.round(cssW * dpr));
+        const bh = Math.max(1, Math.round(cssH * dpr));
+
+        if (canvas.width !== bw || canvas.height !== bh) {
+          canvas.width = bw;
+          canvas.height = bh;
+        }
+        // Mantenemos las coordenadas lógicas de 320x250 en todos los dibujos.
+        ctx.setTransform(bw / LOGICAL_W, 0, 0, bh / LOGICAL_H, 0, 0);
+      });
+      needsRedraw = true;
+    }
+
+    window.addEventListener("resize", resizeCanvases);
+    if (window.ResizeObserver) {
+      const observer = new ResizeObserver(resizeCanvases);
+      [canvasAlice, canvasChannel, canvasBob].forEach(c => observer.observe(c));
+    }
+    resizeCanvases();
+
+    function stepFromHash() {
+      const match = /^#paso-(\d+)$/.exec(location.hash);
+      if (!match) return null;
+      const idx = Number(match[1]) - 1;
+      return idx >= 0 && idx < stepsData.length ? idx : null;
+    }
 
     function setStep(idx) {
       currentStep = idx;
-      tick = 0;
+      tick = reducedMotion ? STATIC_TICK : 0;
+      needsRedraw = true;
 
       document.querySelectorAll(".step-btn").forEach((b, i) => {
         b.classList.toggle("active", i === currentStep);
+        if (i === currentStep) b.setAttribute("aria-current", "step");
+        else b.removeAttribute("aria-current");
       });
 
       const s = stepsData[currentStep];
@@ -413,75 +620,231 @@
       document.getElementById("descChannel").textContent = s.channelText;
       document.getElementById("descBob").textContent = s.bobText;
 
+      // Texto alternativo actualizado para cada diagrama.
+      canvasAlice.setAttribute("aria-label", "Diagrama de Alice: " + s.aliceAlt);
+      canvasChannel.setAttribute("aria-label", "Diagrama del canal: " + s.channelAlt);
+      canvasBob.setAttribute("aria-label", "Diagrama de Bob: " + s.bobAlt);
+
       document.getElementById("cardAlice").classList.toggle("highlight", s.activeBlock === "alice");
       document.getElementById("cardChannel").classList.toggle("highlight", s.activeBlock === "channel");
       document.getElementById("cardBob").classList.toggle("highlight", s.activeBlock === "bob");
 
       document.getElementById("prevBtn").disabled = currentStep === 0;
       document.getElementById("nextBtn").disabled = currentStep === stepsData.length - 1;
-    }
 
-    function nextStep() {
-      if (currentStep < stepsData.length - 1) setStep(currentStep + 1);
-    }
-
-    function prevStep() {
-      if (currentStep > 0) setStep(currentStep - 1);
-    }
-
-    function toggleAuto() {
-      const btn = document.getElementById("autoBtn");
-      if (autoPlayTimer) {
-        clearInterval(autoPlayTimer);
-        autoPlayTimer = null;
-        btn.textContent = "⏯ Auto-Reproducir";
-      } else {
-        btn.textContent = "⏸ Pausar";
-        autoPlayTimer = setInterval(() => {
-          setStep((currentStep + 1) % stepsData.length);
-        }, 4200);
+      // Guarda el paso en la URL para poder refrescar o compartir la escena.
+      const hash = "#paso-" + (currentStep + 1);
+      if (location.hash !== hash) {
+        try {
+          history.replaceState(null, "", hash);
+        } catch (err) {
+          location.hash = hash;
+        }
       }
     }
 
-    function renderLoop() {
-      tick += 0.035;
+    function updateAutoButton() {
+      document.getElementById("autoBtn").textContent =
+        autoPlayTimer ? "⏸ Pausar" : "⏯ Auto-Reproducir";
+    }
+
+    function stopAuto() {
+      if (!autoPlayTimer) return;
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+      updateAutoButton();
+    }
+
+    function startAuto() {
+      if (autoPlayTimer) return;
+
+      // Si ya está en el último paso, la reproducción vuelve a empezar.
+      if (currentStep === stepsData.length - 1) setStep(0);
+
+      autoPlayTimer = setInterval(() => {
+        if (currentStep >= stepsData.length - 1) {
+          stopAuto(); // termina en el último paso, sin saltar al primero
+          return;
+        }
+        setStep(currentStep + 1);
+      }, STEP_DURATION);
+
+      updateAutoButton();
+    }
+
+    function toggleAuto() {
+      if (autoPlayTimer) stopAuto();
+      else startAuto();
+    }
+
+    // Cualquier navegación manual detiene la reproducción automática.
+    function goToStep(idx) {
+      stopAuto();
+      setStep(idx);
+    }
+
+    function nextStep() {
+      if (currentStep < stepsData.length - 1) goToStep(currentStep + 1);
+    }
+
+    function prevStep() {
+      if (currentStep > 0) goToStep(currentStep - 1);
+    }
+
+    // Pantalla completa: útil para presentar la demo en clase o en una charla.
+    function toggleFullscreen() {
+      const root = document.documentElement;
+      if (!document.fullscreenElement) {
+        if (!root.requestFullscreen) return;
+        const request = root.requestFullscreen();
+        if (request && request.catch) request.catch(() => {});
+      } else if (document.exitFullscreen) {
+        const exit = document.exitFullscreen();
+        if (exit && exit.catch) exit.catch(() => {});
+      }
+    }
+
+    document.addEventListener("fullscreenchange", () => {
+      const btn = document.getElementById("fullscreenBtn");
+      if (!btn) return;
+      btn.textContent = document.fullscreenElement
+        ? "⛶ Salir de pantalla completa"
+        : "⛶ Pantalla completa";
+    });
+
+    // Atajos de teclado: ←/→ pasos, Inicio reinicia, Espacio play/pausa, Esc pausa, F pantalla completa.
+    document.addEventListener("keydown", (e) => {
+      if (e.altKey || e.ctrlKey || e.metaKey || e.repeat) return;
+
+      const target = e.target;
+      const onButton = target && target.closest && target.closest("button");
+
+      switch (e.key) {
+        case "ArrowRight":
+          e.preventDefault();
+          nextStep();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          prevStep();
+          break;
+        case "Home":
+          e.preventDefault();
+          goToStep(0);
+          break;
+        case " ":
+        case "Spacebar":
+          // Si un botón tiene el foco, Espacio debe activar ese botón.
+          if (onButton) return;
+          e.preventDefault();
+          toggleAuto();
+          break;
+        case "f":
+        case "F":
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case "Escape":
+          stopAuto();
+          break;
+      }
+    });
+
+    // Tras un clic de mouse soltamos el foco del botón, para que Espacio
+    // controle la reproducción; con teclado el foco se conserva.
+    document.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        if (e.detail > 0) btn.blur();
+      });
+    });
+
+    // Si el hash cambia (URL editada o historial), se refleja en la escena.
+    window.addEventListener("hashchange", () => {
+      const idx = stepFromHash();
+      if (idx !== null && idx !== currentStep) goToStep(idx);
+    });
+
+    function isStepAnimating() {
+      if (reducedMotion) return false;
+      // En el paso final el imán se asienta y la escena queda quieta.
+      if (currentStep === 4) return tick < 1.5;
+      return true;
+    }
+
+    function renderLoop(now) {
+      // Se agenda el siguiente frame antes de dibujar: si algo fallara,
+      // la animación no se detendría de forma permanente.
+      requestAnimationFrame(renderLoop);
+
+      if (!lastFrameTime) lastFrameTime = now;
+      let dt = (now - lastFrameTime) / 1000;
+      lastFrameTime = now;
+      if (dt > 0.1) dt = 0.1; // evita saltos bruscos al volver de otra pestaña
+
+      if (document.hidden) {
+        needsRedraw = true;
+        return;
+      }
+
+      if (!reducedMotion) tick += dt * TICK_SPEED;
+
+      // No redibujar escenas que ya están quietas.
+      if (!needsRedraw && !isStepAnimating()) return;
+      needsRedraw = false;
 
       // ----------------------------------------------------
       // 1. BLOQUE ALICE
       // ----------------------------------------------------
-      ctxAlice.clearRect(0, 0, 320, 250);
-      drawGrid(ctxAlice, 320, 250);
+      ctxAlice.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
+      drawGrid(ctxAlice, LOGICAL_W, LOGICAL_H);
 
       if (currentStep === 0) {
-        // Dibuja el camino secreto escalonado en Alice
+        // El camino secreto se dibuja progresivamente, como si Alice lo trazara
+        const trace = Math.min(1, tick / 1.2);
+        const pathLength = 230;
+
         ctxAlice.strokeStyle = "#191E52";
         ctxAlice.lineWidth = 3;
+        ctxAlice.lineJoin = "round";
+        ctxAlice.setLineDash([pathLength * trace, pathLength]);
         ctxAlice.beginPath();
         ctxAlice.moveTo(40, 210);
         ctxAlice.lineTo(110, 210);
         ctxAlice.lineTo(110, 120);
         ctxAlice.lineTo(180, 120);
         ctxAlice.stroke();
+        ctxAlice.setLineDash([]);
 
         drawDot(ctxAlice, 40, 210, "#7DC4EA", 5, "Inicio");
-        drawDot(ctxAlice, 180, 120, "#FA790F", 7, "Secreto");
 
-        // Punto con ruido oscilante
-        const wx = 180 + Math.cos(tick * 2.5) * 8;
-        const wy = 120 + Math.sin(tick * 2.5) * 8;
-        drawDot(ctxAlice, wx, wy, "#F25207", 6, "Pista + Ruido");
+        if (trace >= 1) {
+          drawDot(ctxAlice, 180, 120, "#FA790F", 7, "Secreto");
+
+          // Punto con ruido oscilante alrededor del punto secreto
+          const wx = 180 + Math.cos(tick * 2.5) * 8;
+          const wy = 120 + Math.sin(tick * 2.5) * 8;
+          drawDot(ctxAlice, wx, wy, "#F25207", 6, "Pista + Ruido", 26);
+        }
       } else if (currentStep === 4) {
-        // Efecto imán / redondeo en Alice
-        const snap = (Math.sin(tick * 2) + 1) / 2;
-        const px = 200 - snap * 20;
+        // Efecto imán: el punto con ruido se acerca y se asienta sobre la clave
+        const t = Math.min(1, tick / 1.4);
+        const ease = 1 - Math.pow(1 - t, 3);
+        const px = 208 - 28 * ease;
         const py = 125;
 
         ctxAlice.fillStyle = "rgba(174, 221, 242, 0.45)";
-        ctxAlice.beginPath(); 
-        ctxAlice.arc(180, 125, 45, 0, Math.PI * 2); 
+        ctxAlice.beginPath();
+        ctxAlice.arc(180, 125, 45, 0, Math.PI * 2);
         ctxAlice.fill();
 
-        drawDot(ctxAlice, px, py, "#FA790F", 9, "🔑 Clave Recuperada");
+        // Anillo que se contrae mientras el ruido es absorbido
+        ctxAlice.strokeStyle = "rgba(250, 121, 15, 0.65)";
+        ctxAlice.lineWidth = 2;
+        ctxAlice.beginPath();
+        ctxAlice.arc(180, 125, 45 - 20 * ease, 0, Math.PI * 2);
+        ctxAlice.stroke();
+
+        drawSharedKey(ctxAlice, px, py, tick, "🔑 Clave recuperada");
       } else {
         // Estado pasivo en Alice
         ctxAlice.strokeStyle = "#191E52";
@@ -498,49 +861,55 @@
       // ----------------------------------------------------
       // 2. BLOQUE CANAL
       // ----------------------------------------------------
-      ctxChannel.clearRect(0, 0, 320, 250);
+      ctxChannel.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
       drawChannelBG(ctxChannel);
 
-      if (currentStep === 1) {
-        const prog = Math.min(1, (tick % 3) / 1.8);
-        const posX = 30 + prog * 260;
-        drawPacket(ctxChannel, posX, 110, "🔓 Pista Pública");
-        drawHacker(ctxChannel, 160, 185);
-      } else if (currentStep === 3) {
-        const prog = Math.min(1, (tick % 3) / 1.8);
-        const posX = 290 - prog * 260;
-        drawPacket(ctxChannel, posX, 110, "🔒 Criptograma");
-        drawHacker(ctxChannel, 160, 185);
+      if (currentStep === 1 || currentStep === 3) {
+        const travelTime = 2.2;  // unidades que tarda el paquete en cruzar
+        const cycle = 2.8;       // pequeña pausa antes de repetir
+        const prog = Math.min(1, (tick % cycle) / travelTime);
+        const startX = 70;
+        const endX = 250;
+
+        // Paso 2: Alice -> Bob (izquierda a derecha).
+        // Paso 4: Bob -> Alice (derecha a izquierda).
+        const posX = currentStep === 1
+          ? startX + (endX - startX) * prog
+          : endX - (endX - startX) * prog;
+
+        drawPacket(ctxChannel, posX, 110, currentStep === 1 ? "🔓 Pista Pública" : "🔒 Criptograma");
+        drawHacker(ctxChannel, 160, 185, posX);
       } else {
         ctxChannel.fillStyle = "#164070";
-        ctxChannel.font = "600 11.5px Segoe UI";
+        ctxChannel.font = `600 11.5px ${CANVAS_FONT}`;
         ctxChannel.fillText("Canal seguro contra ataques cuánticos", 45, 125);
       }
 
       // ----------------------------------------------------
       // 3. BLOQUE BOB
       // ----------------------------------------------------
-      ctxBob.clearRect(0, 0, 320, 250);
-      drawGrid(ctxBob, 320, 250);
+      ctxBob.clearRect(0, 0, LOGICAL_W, LOGICAL_H);
+      drawGrid(ctxBob, LOGICAL_W, LOGICAL_H);
 
-      if (currentStep === 2 || currentStep === 3) {
-        drawDot(ctxBob, 160, 125, "#FA790F", 9, "📦 Cápsula Cifrada");
-        ctxBob.strokeStyle = "#F25207";
-        ctxBob.lineWidth = 2;
-        ctxBob.setLineDash([4, 4]);
-        ctxBob.beginPath();
-        ctxBob.arc(160, 125, 32 + Math.sin(tick * 3) * 4, 0, Math.PI * 2);
-        ctxBob.stroke();
-        ctxBob.setLineDash([]);
+      if (currentStep === 2) {
+        // Primero llega la pista pública (ek) y después se forma la cápsula.
+        const arrive = Math.min(1, tick / 1.2);
+        if (arrive < 1) {
+          const ease = 1 - Math.pow(1 - arrive, 3);
+          const x = 50 + (160 - 50) * ease;
+          drawDot(ctxBob, x, 125, "#7DC4EA", 7, "📥 ek recibida");
+        } else {
+          drawCapsule(ctxBob, tick - 1.2);
+        }
+      } else if (currentStep === 3) {
+        drawCapsule(ctxBob, tick);
       } else if (currentStep === 4) {
-        drawDot(ctxBob, 160, 125, "#FA790F", 9, "🔑 Misma Clave Compartida");
+        drawSharedKey(ctxBob, 160, 125, tick, "🔑 Misma clave");
       } else {
-        ctxBob.fillStyle = "#7DC4EA";
-        ctxBob.font = "600 12px Segoe UI";
+        ctxBob.fillStyle = "#164070";
+        ctxBob.font = `600 12px ${CANVAS_FONT}`;
         ctxBob.fillText("Esperando datos de Alice...", 80, 125);
       }
-
-      requestAnimationFrame(renderLoop);
     }
 
     function drawGrid(ctx, w, h) {
@@ -568,31 +937,151 @@
       ctx.setLineDash([]);
 
       ctx.fillStyle = "#164070";
-      ctx.font = "700 11px Segoe UI";
-      ctx.fillText("📡 Tráfico por Internet", 98, 24);
+      ctx.font = `700 11px ${CANVAS_FONT}`;
+      ctx.textAlign = "center";
+      ctx.fillText("📡 Tráfico por Internet", 160, 24);
+      ctx.textAlign = "left";
+    }
+
+    // Dibuja un rectángulo redondeado sin depender de ctx.roundRect
+    // (no está disponible en navegadores antiguos).
+    function roundRectPath(ctx, x, y, w, h, r) {
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
     }
 
     function drawPacket(ctx, x, y, text) {
+      const w = 124;
+      const h = 36;
+
       ctx.fillStyle = "#191E52";
       ctx.strokeStyle = "#FA790F";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(x - 62, y - 18, 124, 36, 8);
+      roundRectPath(ctx, x - w / 2, y - h / 2, w, h, 8);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = "#F5A25D";
-      ctx.font = "700 11.5px Segoe UI";
-      ctx.fillText(text, x - 50, y + 4);
+      ctx.font = `700 11.5px ${CANVAS_FONT}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, x, y + 1);
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
     }
 
-    function drawHacker(ctx, x, y) {
-      ctx.fillStyle = "#F25207";
-      ctx.font = "700 11px Segoe UI";
-      ctx.fillText("🤖 Espía Cuántico (Atascado)", x - 75, y);
+    function drawHacker(ctx, x, y, packetX) {
+      const dist = Math.abs(packetX - x);
+      const near = Math.max(0, 1 - dist / 90);
+      const shake = near > 0 ? Math.sin(tick * 40) * 1.5 * near : 0;
+
+      // Intento de intercepción: línea punteada desde el espía al paquete.
+      if (near > 0.05) {
+        ctx.strokeStyle = "rgba(194, 65, 12, 0.55)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(x, y - 16);
+        ctx.lineTo(packetX, 130);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Insignia de fallo en la esquina superior derecha del paquete.
+        const bx = packetX + 54;
+        const by = 94;
+        ctx.fillStyle = "#C2410C";
+        ctx.beginPath();
+        ctx.arc(bx, by, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(bx - 3, by - 3);
+        ctx.lineTo(bx + 3, by + 3);
+        ctx.moveTo(bx + 3, by - 3);
+        ctx.lineTo(bx - 3, by + 3);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = "#C2410C";
+      ctx.font = `700 11px ${CANVAS_FONT}`;
+      ctx.textAlign = "center";
+      ctx.fillText(
+        near > 0.05 ? "🤖 Espía Cuántico: no puede abrirlo" : "🤖 Espía Cuántico (atascado)",
+        x + shake,
+        y
+      );
+      ctx.textAlign = "left";
     }
 
-    function drawDot(ctx, x, y, color, radius, label) {
+    // Cápsula cifrada de Bob: aparece con un pequeño "pop" y late suavemente.
+    function drawCapsule(ctx, t) {
+      const appear = Math.min(1, t / 0.35);
+      const ease = 1 - Math.pow(1 - appear, 3);
+      const scale = 0.55 + 0.45 * ease;
+      const cx = 160;
+      const cy = 125;
+
+      // Anillo punteado que late alrededor de la cápsula ya formada.
+      if (appear >= 1) {
+        ctx.strokeStyle = "rgba(250, 121, 15, 0.6)";
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(cx, cy, 32 + Math.sin(t * 3) * 4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // Cuerpo de la cápsula.
+      const w = 20 * scale;
+      const h = 40 * scale;
+      ctx.fillStyle = "#FA790F";
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      roundRectPath(ctx, cx - w / 2, cy - h / 2, w, h, w / 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Línea central: sugiere que la cápsula está cerrada.
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - w / 2 + 1, cy);
+      ctx.lineTo(cx + w / 2 - 1, cy);
+      ctx.stroke();
+
+      if (appear >= 1) {
+        ctx.fillStyle = "#191E52";
+        ctx.font = `700 11px ${CANVAS_FONT}`;
+        ctx.textAlign = "center";
+        ctx.fillText("📦 Cápsula cifrada", cx, cy + h / 2 + 22);
+        ctx.textAlign = "left";
+      }
+    }
+
+    // Clave compartida: anillo pulsante + punto naranja con etiqueta.
+    function drawSharedKey(ctx, x, y, t, label) {
+      const wave = (Math.sin(t * 3) + 1) / 2;
+      const ring = 16 + wave * 8;
+      const alpha = 0.3 + wave * 0.45;
+
+      ctx.strokeStyle = `rgba(250, 121, 15, ${alpha.toFixed(2)})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, ring, 0, Math.PI * 2);
+      ctx.stroke();
+
+      drawDot(ctx, x, y, "#FA790F", 9, label, 25);
+    }
+
+    function drawDot(ctx, x, y, color, radius, label, labelDy) {
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -602,14 +1091,19 @@
       ctx.stroke();
 
       if (label) {
+        // Centrado para que las etiquetas no se salgan del canvas.
+        const dy = labelDy === undefined ? -radius - 6 : labelDy;
         ctx.fillStyle = "#191E52";
-        ctx.font = "700 11px Segoe UI";
-        ctx.fillText(label, x - 35, y - radius - 6);
+        ctx.font = `700 11px ${CANVAS_FONT}`;
+        ctx.textAlign = "center";
+        ctx.fillText(label, x, y + dy);
+        ctx.textAlign = "left";
       }
     }
 
-    setStep(0);
-    renderLoop();
+    const initialStep = stepFromHash();
+    setStep(initialStep === null ? 0 : initialStep);
+    requestAnimationFrame(renderLoop);
   </script>
 </body>
 </html>
