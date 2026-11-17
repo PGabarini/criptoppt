@@ -95,6 +95,13 @@
       padding: 0 0 96px;
     }
 
+    /* Sin el panel de texto, el contenido de la demo se centra en el espacio libre. */
+    .slide-demo .app {
+      flex: 1;
+      justify-content: center;
+      padding-bottom: 24px;
+    }
+
     .slide-inner {
       width: 100%;
       max-width: 64rem;
@@ -145,7 +152,16 @@
       height: 46vh;
     }
 
-    .chart-box.tall { height: 58vh; }
+    .chart-box.tall { height: 54vh; }
+
+    .chart-note {
+      margin-top: 1rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--ink-muted);
+    }
 
     /* Portada */
     .slide-cover {
@@ -613,32 +629,6 @@
       font-weight: 500;
     }
 
-    /* Panel Explicativo Inferior */
-    .info-panel {
-      background: var(--surface);
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      box-shadow: 0 4px 12px rgba(11, 31, 58, 0.08);
-    }
-
-    .story-title {
-      font-size: 1.12rem;
-      font-weight: 800;
-      color: var(--ink);
-      margin-bottom: 4px;
-    }
-
-    .story-text {
-      font-size: 0.94rem;
-      line-height: 1.55;
-      color: var(--ink);
-      font-weight: 500;
-    }
-
     .step-btn:focus-visible {
       outline: 3px solid var(--ink);
       outline-offset: 2px;
@@ -721,13 +711,11 @@
       }
 
       .block-card,
-      .info-panel,
       .legend {
         box-shadow: none;
       }
 
-      .stage-container,
-      .info-panel {
+      .stage-container {
         break-inside: avoid;
       }
     }
@@ -770,7 +758,8 @@
       <h2 class="slide-title">La Amenaza Cuántica</h2>
       <p class="slide-sub">ECDH (Curvas Elípticas) vs Algoritmo de Shor</p>
       <div class="panel">
-        <div class="chart-box tall"><canvas id="shorChart" role="img" aria-label="Pasos necesarios para romper la clave: fuerza bruta clásica frente al algoritmo de Shor"></canvas></div>
+        <div class="chart-box tall"><canvas id="shorChart" role="img" aria-label="Operaciones necesarias para romper una clave de curva elíptica: unas 2 a la 128 con el mejor ataque clásico frente a unas 2 a la 24 con el algoritmo de Shor"></canvas></div>
+        <p class="chart-note">Órdenes de magnitud. Con computación clásica, el esfuerzo para romper la clave crece de forma exponencial con su tamaño; con el algoritmo de Shor, apenas crece.</p>
       </div>
     </div>
   </section>
@@ -852,7 +841,7 @@
       </button>
       <button type="button" class="step-btn" onclick="goToStep(1)">
         <span class="num">2</span>
-        <span class="label">Envío Pista Púb.</span>
+        <span class="label">Envío clave púb.</span>
       </button>
       <button type="button" class="step-btn" onclick="goToStep(2)">
         <span class="num">3</span>
@@ -860,7 +849,7 @@
       </button>
       <button type="button" class="step-btn" onclick="goToStep(3)">
         <span class="num">4</span>
-        <span class="label">Envío Criptograma</span>
+        <span class="label">Envío criptograma</span>
       </button>
       <button type="button" class="step-btn" onclick="goToStep(4)">
         <span class="num">5</span>
@@ -874,7 +863,7 @@
       <div class="block-card" id="cardAlice">
         <div class="block-header">
           <span>👩‍💻 Bloque Alice</span>
-          <small>Receptora</small>
+          <small>Cliente TLS</small>
         </div>
         <canvas id="canvasAlice" width="320" height="250" role="img"
           aria-label="Diagrama de Alice: camino secreto y ruido">Diagrama de Alice</canvas>
@@ -885,7 +874,7 @@
       <div class="block-card" id="cardChannel">
         <div class="block-header">
           <span>🌐 Canal de Internet</span>
-          <small>Inseguro / Cuántico</small>
+          <small>Público · con espía</small>
         </div>
         <canvas id="canvasChannel" width="320" height="250" role="img"
           aria-label="Diagrama del canal: inactivo">Diagrama del canal de internet</canvas>
@@ -896,7 +885,7 @@
       <div class="block-card" id="cardBob">
         <div class="block-header">
           <span>🧑‍💻 Bloque Bob</span>
-          <small>Emisor</small>
+          <small>Servidor TLS</small>
         </div>
         <canvas id="canvasBob" width="320" height="250" role="img"
           aria-label="Diagrama de Bob: en espera">Diagrama de Bob</canvas>
@@ -911,15 +900,7 @@
       <span class="legend-item"><span class="legend-dot noise" aria-hidden="true"></span>Ruido</span>
       <span class="legend-item"><span class="legend-line" aria-hidden="true"></span>Camino secreto</span>
       <span class="legend-item"><span class="legend-dot spy" aria-hidden="true"></span>Espía cuántico</span>
-      <span class="legend-item"><span class="legend-dot success" aria-hidden="true"></span>Canal seguro</span>
-    </div>
-
-    <!-- Panel Explicativo Inferior -->
-    <div class="info-panel">
-      <div aria-live="polite" aria-atomic="true">
-        <div class="story-title" id="titleText"></div>
-        <p class="story-text" id="descText"></p>
-      </div>
+      <span class="legend-item"><span class="legend-dot success" aria-hidden="true"></span>Clave establecida</span>
     </div>
   </div>
   </section>
@@ -1011,60 +992,51 @@
   </nav>
 
   <script>
+    // La explicación oral de cada paso está en explicacionFuncionamiento.md.
     const stepsData = [
       {
-        title: "Paso 1: Generación de Claves en Alice (KeyGen)",
-        desc: "Alice elige un camino secreto en la grilla (su clave privada) y le suma un pequeño error aleatorio (ruido). El punto público resultante oculta la estructura matemática frente a computadoras cuánticas.",
-        aliceText: "🔑 Alice traza su Camino Secreto (línea oscura) y añade ruido al punto final para crear su Clave Pública (ek).",
-        channelText: "💤 Canal inactivo. Alice procesa su par de claves en su entorno privado.",
-        bobText: "⏳ En espera de recibir la clave pública de Alice para interactuar.",
-        aliceAlt: "Camino secreto trazado en la grilla, con el punto final rodeado de ruido.",
-        channelAlt: "Canal de internet inactivo.",
+        aliceText: "🔑 Alice (el cliente TLS) traza su camino secreto y le suma ruido. Así obtiene su clave pública (1184 B) y se guarda el camino como clave privada.",
+        channelText: "💤 Canal en espera. Todo el cálculo ocurre en el equipo de Alice.",
+        bobText: "⏳ Bob (el servidor TLS) espera la clave pública de Alice.",
+        aliceAlt: "Camino secreto trazado en la grilla, con el punto final desplazado por el ruido.",
+        channelAlt: "Canal de internet en espera.",
         bobAlt: "Bob espera la clave pública de Alice.",
         activeBlock: "alice"
       },
       {
-        title: "Paso 2: Transmisión de la Pista Pública (ek)",
-        desc: "Alice envía su clave pública a través del canal inseguro. Un espía con un ordenador cuántico intenta interceptar el paquete, pero el ruido le impide despejar la ecuación.",
-        aliceText: "📤 Envía la Pista Pública (ek) hacia el canal de internet.",
-        channelText: "🚀 Paquete en tránsito: la pista pública viaja por la red. El espía cuántico intenta interceptarla, pero el ruido se lo impide.",
-        bobText: "📥 Recibe y procesa la pista pública enviada por Alice.",
+        aliceText: "📤 Envía su clave pública dentro del ClientHello.",
+        channelText: "🚀 La clave pública (1184 B) viaja por la red. El espía cuántico la copia, pero no puede deducir el camino secreto.",
+        bobText: "📥 Recibe la clave pública de Alice.",
         aliceAlt: "Alice muestra su clave pública en la grilla.",
-        channelAlt: "Paquete con la pista pública viajando de Alice hacia Bob.",
-        bobAlt: "Bob espera recibir la pista pública.",
+        channelAlt: "La clave pública viaja de Alice hacia Bob; el espía la copia pero no obtiene el secreto.",
+        bobAlt: "Bob espera recibir la clave pública.",
         activeBlock: "channel"
       },
       {
-        title: "Paso 3: Encapsulamiento en Bob (Encaps)",
-        desc: "Bob toma la pista pública de Alice, genera una clave secreta compartida y la cifra sumando su propia capa de ruido para armar el criptograma cifrado.",
-        aliceText: "💤 En espera de recibir el criptograma encapsulado por Bob.",
-        channelText: "💤 Canal inactivo mientras Bob procesa el encapsulamiento localmente.",
-        bobText: "📦 Tras recibir ek, Bob genera su clave secreta y la encapsula combinándola con la pista de Alice + su propio ruido.",
+        aliceText: "💤 Espera el criptograma de Bob.",
+        channelText: "💤 Canal en espera mientras Bob encapsula la clave.",
+        bobText: "📦 Genera un valor aleatorio, obtiene de él la clave compartida y lo encierra con la clave pública de Alice más su propio ruido: el criptograma.",
         aliceAlt: "Alice espera el criptograma.",
-        channelAlt: "Canal de internet inactivo.",
-        bobAlt: "Bob encapsula la clave secreta en una cápsula cifrada.",
+        channelAlt: "Canal de internet en espera.",
+        bobAlt: "Bob recibe la clave pública y arma el criptograma.",
         activeBlock: "bob"
       },
       {
-        title: "Paso 4: Envío del Criptograma de Regreso",
-        desc: "Bob emite de vuelta el paquete cifrado (u, v) a través del canal público de internet con destino a Alice.",
-        aliceText: "📥 Recibe el criptograma encapsulado procedente del canal público.",
-        channelText: "🚀 Paquete en tránsito de retorno: el criptograma (u, v) viaja de regreso a Alice. El canal sigue siendo inseguro, pero el contenido va cifrado.",
-        bobText: "📤 Envía el paquete cifrado de regreso hacia Alice.",
+        aliceText: "📥 Recibe el criptograma dentro del ServerHello.",
+        channelText: "🚀 El criptograma (1088 B) viaja de vuelta. El espía lo copia, pero sin el secreto de Alice no puede abrirlo.",
+        bobText: "📤 Envía el criptograma hacia Alice.",
         aliceAlt: "Alice espera recibir el criptograma.",
-        channelAlt: "Criptograma viajando de Bob hacia Alice.",
-        bobAlt: "Bob envía la cápsula cifrada.",
+        channelAlt: "El criptograma viaja de Bob hacia Alice; el espía lo copia pero no obtiene la clave.",
+        bobAlt: "Bob envía el criptograma.",
         activeBlock: "channel"
       },
       {
-        title: "Paso 5: Desencapsulamiento y Efecto Imán (Decaps)",
-        desc: "Alice usa su secreto para cancelar la mayor parte de la fórmula. El pequeño ruido restante cae dentro del rango de tolerancia y se redondea limpiamente, obteniendo la misma clave secreta que Bob.",
-        aliceText: "🧲 Alice aplica su secreto, elimina el ruido residual mediante redondeo ('efecto imán') y recupera la Clave Secreta.",
-        channelText: "💤 Canal libre. La comunicación privada ha finalizado con éxito.",
-        bobText: "🔑 Posee exactamente la misma clave secreta compartida que Alice.",
-        aliceAlt: "Efecto imán: el ruido se asienta sobre la clave recuperada.",
-        channelAlt: "Canal de internet inactivo, comunicación finalizada.",
-        bobAlt: "Bob muestra la misma clave secreta compartida.",
+        aliceText: "🧲 Con su secreto cancela casi todo el ruido; lo que queda se redondea (efecto imán). Verifica el criptograma y obtiene la clave compartida.",
+        channelText: "✅ Clave establecida. En TLS se combina con la de X25519 (esquema híbrido): si uno de los dos algoritmos fallara, el otro sigue protegiendo la conexión.",
+        bobText: "🔑 Tiene la misma clave compartida que Alice, sin que la clave haya viajado por la red.",
+        aliceAlt: "Efecto imán: el ruido se redondea y Alice recupera la clave compartida.",
+        channelAlt: "Clave establecida; el espía no la conoce.",
+        bobAlt: "Bob muestra la misma clave compartida.",
         activeBlock: "alice"
       }
     ];
@@ -1171,8 +1143,6 @@
       });
 
       const s = stepsData[currentStep];
-      document.getElementById("titleText").textContent = s.title;
-      document.getElementById("descText").textContent = s.desc;
       document.getElementById("descAlice").textContent = s.aliceText;
       document.getElementById("descChannel").textContent = s.channelText;
       document.getElementById("descBob").textContent = s.bobText;
@@ -1370,7 +1340,7 @@
           // Punto con ruido oscilante alrededor del punto secreto
           const wx = 180 + Math.cos(tick * 2.5) * 8;
           const wy = 120 + Math.sin(tick * 2.5) * 8;
-          drawDot(ctxAlice, wx, wy, COLORS.noise, 6, "Pista + Ruido", 26);
+          drawDot(ctxAlice, wx, wy, COLORS.noise, 6, "Clave pública (con ruido)", 26);
         }
       } else if (currentStep === 4) {
         // Efecto imán: el punto con ruido se acerca y se asienta sobre la clave
@@ -1391,7 +1361,7 @@
         ctxAlice.arc(180, 125, 45 - 20 * ease, 0, Math.PI * 2);
         ctxAlice.stroke();
 
-        drawSharedKey(ctxAlice, px, py, tick, "🔑 Clave recuperada");
+        drawSharedKey(ctxAlice, px, py, tick, "🔑 Clave recuperada ✓");
       } else {
         // Estado pasivo en Alice
         ctxAlice.strokeStyle = COLORS.path;
@@ -1402,7 +1372,7 @@
         ctxAlice.lineTo(110, 120);
         ctxAlice.lineTo(180, 120);
         ctxAlice.stroke();
-        drawDot(ctxAlice, 180, 120, COLORS.public, 6, "Clave Pública ek");
+        drawDot(ctxAlice, 180, 120, COLORS.public, 6, "Clave pública");
       }
 
       // ----------------------------------------------------
@@ -1424,12 +1394,20 @@
           ? startX + (endX - startX) * prog
           : endX - (endX - startX) * prog;
 
-        drawPacket(ctxChannel, posX, 110, currentStep === 1 ? "🔓 Pista Pública" : "🔒 Criptograma");
+        drawPacket(ctxChannel, posX, 110, currentStep === 1 ? "🔓 Clave pública" : "🔒 Criptograma");
         drawHacker(ctxChannel, 160, 185, posX);
       } else {
-        ctxChannel.fillStyle = COLORS.success;
+        // El canal nunca es seguro: lo que queda protegido es la clave.
+        const done = currentStep === 4;
+        ctxChannel.fillStyle = done ? COLORS.success : COLORS.muted;
         ctxChannel.font = `600 11.5px ${CANVAS_FONT}`;
-        ctxChannel.fillText("Canal seguro contra ataques cuánticos", 45, 125);
+        ctxChannel.textAlign = "center";
+        ctxChannel.fillText(done ? "✓ Clave establecida" : "Canal en espera", 160, 120);
+        if (done) {
+          ctxChannel.fillStyle = COLORS.muted;
+          ctxChannel.fillText("El espía vio todo el tráfico y no la conoce", 160, 140);
+        }
+        ctxChannel.textAlign = "left";
       }
 
       // ----------------------------------------------------
@@ -1444,7 +1422,7 @@
         if (arrive < 1) {
           const ease = 1 - Math.pow(1 - arrive, 3);
           const x = 50 + (160 - 50) * ease;
-          drawDot(ctxBob, x, 125, COLORS.public, 7, "📥 ek recibida");
+          drawDot(ctxBob, x, 125, COLORS.public, 7, "📥 Clave pública recibida");
         } else {
           drawCapsule(ctxBob, tick - 1.2);
         }
@@ -1455,7 +1433,7 @@
       } else {
         ctxBob.fillStyle = COLORS.muted;
         ctxBob.font = `600 12px ${CANVAS_FONT}`;
-        ctxBob.fillText("Esperando datos de Alice...", 80, 125);
+        ctxBob.fillText("Esperando la clave pública...", 80, 125);
       }
     }
 
@@ -1559,7 +1537,9 @@
       ctx.font = `700 11px ${CANVAS_FONT}`;
       ctx.textAlign = "center";
       ctx.fillText(
-        near > 0.05 ? "🤖 Espía Cuántico: no puede abrirlo" : "🤖 Espía Cuántico (atascado)",
+        near > 0.05
+          ? (currentStep === 1 ? "🤖 La copia, pero no obtiene el secreto" : "🤖 Lo copia, pero no obtiene la clave")
+          : "🤖 Espía cuántico (escuchando)",
         x + shake,
         y
       );
@@ -1608,7 +1588,7 @@
         ctx.fillStyle = COLORS.ink;
         ctx.font = `700 11px ${CANVAS_FONT}`;
         ctx.textAlign = "center";
-        ctx.fillText("📦 Cápsula cifrada", cx, cy + h / 2 + 22);
+        ctx.fillText("📦 Criptograma", cx, cy + h / 2 + 22);
         ctx.textAlign = "left";
       }
     }
@@ -1761,16 +1741,21 @@
       init();
     }
 
+    function toSuperscript(n) {
+      return String(n).split("").map((d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d] || d).join("");
+    }
+
     function initShorChart() {
       const ctxShor = document.getElementById("shorChart").getContext("2d");
       shorChartInstance = new Chart(ctxShor, {
         type: "line",
         data: {
-          labels: ["128 bits", "192 bits", "256 bits"],
+          labels: ["256 bits (P-256 / X25519)", "384 bits (P-384)", "521 bits (P-521)"],
           datasets: [
             {
-              label: "Cripto Clásica (Fuerza Bruta)",
-              data: [1e5, 1e8, 1e12],
+              // Mejor ataque clásico (Pollard rho): ≈ 2^(n/2) operaciones.
+              label: "Ataque clásico (Pollard rho)",
+              data: [128, 192, 260],
               borderColor: "#2563EB",
               backgroundColor: "rgba(37, 99, 235, 0.15)",
               borderWidth: 3,
@@ -1778,8 +1763,9 @@
               fill: true
             },
             {
-              label: "Ataque Cuántico (Shor)",
-              data: [1e2, 1.5e2, 2.5e2],
+              // Algoritmo de Shor: ≈ n³ operaciones lógicas (crecimiento polinomial).
+              label: "Ataque cuántico (Shor)",
+              data: [24, 25.8, 27.1],
               borderColor: "#DC2626",
               backgroundColor: "#DC2626",
               borderWidth: 3,
@@ -1794,25 +1780,17 @@
           maintainAspectRatio: false,
           scales: {
             y: {
-              type: "logarithmic",
-              title: { display: true, text: "Pasos (Escala Logarítmica)", font: { weight: "bold" } },
+              // El eje muestra el exponente: cada marca es 2^x operaciones.
+              beginAtZero: true,
+              max: 280,
+              title: { display: true, text: "Operaciones necesarias (escala logarítmica)", font: { weight: "bold" } },
               ticks: {
-                maxTicksLimit: 7,
-                callback: (value) => {
-                  if (value === 0) return "0";
-                  const exp = Math.floor(Math.log10(Math.abs(value)));
-                  if (exp >= 4) {
-                    const mantissa = value / Math.pow(10, exp);
-                    const m = Number.isInteger(mantissa) ? mantissa : mantissa.toFixed(1);
-                    const sup = String(exp).split("").map((d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]).join("");
-                    return m + "·10" + sup;
-                  }
-                  return value.toLocaleString("es-AR");
-                }
+                stepSize: 40,
+                callback: (value) => "2" + toSuperscript(value)
               }
             },
             x: {
-              title: { display: true, text: "Tamaño de Clave", font: { weight: "bold" } }
+              title: { display: true, text: "Tamaño de clave de curva elíptica", font: { weight: "bold" } }
             }
           },
           plugins: {
@@ -1820,6 +1798,11 @@
               labels: {
                 font: { size: 14, weight: "bold" },
                 filter: (item) => shorRevealed || item.datasetIndex !== 1
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: (item) => item.dataset.label + ": ≈ 2" + toSuperscript(Math.round(item.parsed.y)) + " operaciones"
               }
             }
           }
