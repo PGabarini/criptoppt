@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>¿Cómo funciona ML-KEM? — Visualización Completa por Bloques</title>
+  <title>Transición a Criptografía Poscuántica</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
       /* Base: navy profundo, superficies frías y texto de alto contraste. */
@@ -46,11 +47,369 @@
     body {
       background-color: var(--page);
       color: var(--ink);
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* =====================================================
+       Presentación: cada diapositiva ocupa toda la pantalla
+       ===================================================== */
+    .deck {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding-bottom: 36px;
+      justify-content: center;
+      padding: 4rem 4rem 6rem;
+      overflow-y: auto;
+      background: var(--page);
+      opacity: 0;
+      visibility: hidden;
+      transform: scale(0.97);
+      transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s;
+      pointer-events: none;
+    }
+
+    /* Sin transición al abrir la página (evita el fundido desde la portada). */
+    .deck.booting .slide { transition: none; }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      pointer-events: auto;
+      z-index: 1;
+    }
+
+    /* La demo de ML-KEM conserva su maquetación original. */
+    .slide.slide-demo {
+      justify-content: flex-start;
+      padding: 0 0 96px;
+    }
+
+    .slide-inner {
+      width: 100%;
+      max-width: 64rem;
+    }
+
+    .slide-title {
+      font-size: 2.3rem;
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      margin-bottom: 0.4rem;
+    }
+
+    .slide-title::after {
+      content: "";
+      display: block;
+      width: 64px;
+      height: 4px;
+      margin-top: 0.6rem;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+
+    .slide-sub {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--ink-muted);
+      margin-bottom: 1.75rem;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(11, 31, 58, 0.08);
+    }
+
+    .panel-title {
+      text-align: center;
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .chart-box {
+      position: relative;
+      height: 52vh;
+    }
+
+    .chart-box.tall { height: 58vh; }
+
+    /* Portada */
+    .slide-cover {
+      background: var(--ink);
+      border-bottom: 6px solid var(--accent);
+      text-align: center;
+    }
+
+    .cover-title {
+      font-size: 3.6rem;
+      font-weight: 900;
+      line-height: 1.12;
+      color: var(--white);
+      margin-bottom: 1.2rem;
+    }
+
+    .cover-title .accent { color: var(--accent-soft); }
+
+    .cover-sub {
+      font-size: 1.7rem;
+      font-weight: 600;
+      color: var(--on-dark-muted);
+      margin-bottom: 2.8rem;
+    }
+
+    .cover-card {
+      display: inline-block;
+      padding: 1.8rem 3rem;
+      border-radius: 12px;
+      border: 1px solid rgba(253, 230, 138, 0.35);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .cover-card .kicker {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--on-dark-muted);
+      margin-bottom: 0.9rem;
+    }
+
+    .cover-card .name {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--accent-soft);
+      margin-top: 0.35rem;
+    }
+
+    .cover-card .org {
+      font-size: 0.9rem;
+      color: var(--on-dark-muted);
+      margin-top: 1.4rem;
+    }
+
+    /* Tarjetas en fila */
+    .cards {
+      display: flex;
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      flex: 1;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 1.6rem 1.5rem 1.5rem;
+      box-shadow: 0 4px 12px rgba(11, 31, 58, 0.08);
+    }
+
+    .card.centered {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .card .icon {
+      width: 2.6rem;
+      height: 2.6rem;
+      margin-bottom: 0.8rem;
+      color: var(--c, var(--info));
+    }
+
+    .card h3 {
+      font-size: 1.45rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+
+    .card p {
+      font-size: 1rem;
+      line-height: 1.45;
+      color: var(--ink-muted);
+      font-weight: 500;
+    }
+
+    .card.warn { border-color: rgba(220, 38, 38, 0.45); }
+    .card.warn h3 { color: var(--noise); }
+
+    .flag-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+    }
+
+    .flag {
+      font-size: 2.4rem;
+      line-height: 1;
+      text-align: center;
+      margin-bottom: 1.1rem;
+    }
+
+    .bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      font-size: 1rem;
+      line-height: 1.42;
+      color: var(--ink);
+    }
+
+    .bullets li {
+      display: flex;
+      gap: 0.5rem;
+      align-items: flex-start;
+    }
+
+    .bullets li::before {
+      content: "▪";
+      color: var(--c);
+    }
+
+    .bullets b { color: var(--c); }
+
+    /* Banderas (Twemoji) */
+    .emoji {
+      width: 1em;
+      height: 1em;
+      margin: 0 0.05em;
+      vertical-align: -0.1em;
+      display: inline-block;
+    }
+
+    /* Segmentación TCP */
+    .net-bars {
+      position: relative;
+      padding-top: 2rem;
+    }
+
+    .mss-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 70%;
+      border-left: 2px dashed var(--ink-muted);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .mss-line span {
+      position: absolute;
+      top: 0;
+      left: 6px;
+      white-space: nowrap;
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--white);
+      background: var(--ink-muted);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .net-row { margin-bottom: 1.6rem; }
+    .net-row:last-child { margin-bottom: 0; }
+
+    .net-label {
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+      color: var(--c);
+    }
+
+    .net-track {
+      display: flex;
+      gap: 4px;
+      height: 2.5rem;
+      border-radius: 5px;
+      overflow: hidden;
+      background: #EAF1F8;
+      border: 1px solid var(--border);
+    }
+
+    .net-track > div { height: 100%; }
+
+    /* Navegación entre diapositivas */
+    .deck-nav {
+      position: fixed;
+      right: 1.75rem;
+      bottom: 1.5rem;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .deck-counter {
+      min-width: 3.4rem;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--ink);
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 10px;
+    }
+
+    .deck-btn {
+      display: grid;
+      place-items: center;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      border: 2px solid var(--ink);
+      background: var(--surface);
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(11, 31, 58, 0.18);
+      transition: background-color 0.15s, color 0.15s, transform 0.15s;
+    }
+
+    .deck-btn.primary { background: var(--accent); }
+
+    .deck-btn svg { width: 1.3rem; height: 1.3rem; }
+
+    .deck-btn:hover:not(:disabled) {
+      background: var(--ink);
+      color: var(--white);
+      transform: translateY(-2px);
+    }
+
+    .deck-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .deck-btn:focus-visible {
+      outline: 3px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 900px) {
+      .slide { padding: 2rem 16px 6rem; justify-content: flex-start; }
+      .cards { flex-direction: column; }
+      .cover-title { font-size: 2.3rem; }
+      .cover-sub { font-size: 1.2rem; }
+      .slide-title { font-size: 1.7rem; }
     }
 
     header {
@@ -63,7 +422,7 @@
       box-shadow: 0 4px 12px rgba(11, 31, 58, 0.18);
     }
 
-    h1 {
+    header h1 {
       font-size: 1.85rem;
       font-weight: 900;
       color: var(--accent-soft);
@@ -199,7 +558,7 @@
       color: var(--accent-soft);
     }
 
-    canvas {
+    .stage-container canvas {
       width: 100%;
       height: auto;
       aspect-ratio: 320 / 250;
@@ -348,7 +707,7 @@
       .stage-container { grid-template-columns: 1fr; }
       .steps-bar { grid-template-columns: 1fr 1fr; }
       .step-btn:last-child { grid-column: 1 / -1; }
-      canvas { max-width: 360px; margin: 0 auto; }
+      .stage-container canvas { max-width: 360px; margin: 0 auto; }
     }
 
     @media print {
@@ -374,6 +733,7 @@
       }
 
       .controls,
+      .deck-nav,
       .shortcuts-hint {
         display: none !important;
       }
@@ -407,7 +767,96 @@
   </style>
 </head>
 <body>
+<main class="deck booting">
 
+  <!-- Diapositiva 1: Portada -->
+  <section class="slide slide-cover active" id="slide-portada" aria-label="Portada">
+    <h1 class="cover-title">Transición a Criptografía<br><span class="accent">Poscuántica</span></h1>
+    <p class="cover-sub">ML-KEM-768 vs X25519 en TLS 1.3</p>
+    <div class="cover-card">
+      <p class="kicker">Investigadores</p>
+      <p class="name">Lautaro Melchiori</p>
+      <p class="name">Juan Manuel Rama</p>
+      <p class="name">Pablo Gabarini</p>
+      <p class="org">Universidad Tecnológica Nacional (UTN)</p>
+    </div>
+  </section>
+
+  <!-- Diapositiva 2: La Amenaza Cuántica -->
+  <section class="slide" id="slide-amenaza" aria-label="La amenaza cuántica">
+    <div class="slide-inner">
+      <h2 class="slide-title">La Amenaza Cuántica</h2>
+      <p class="slide-sub">ECDH (Curvas Elípticas) vs Algoritmo de Shor</p>
+      <div class="panel">
+        <div class="chart-box tall"><canvas id="shorChart" role="img" aria-label="Pasos necesarios para romper la clave: fuerza bruta clásica frente al algoritmo de Shor"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Diapositiva 3: Estado Actual -->
+  <section class="slide" id="slide-estado" aria-label="Estado actual">
+    <div class="slide-inner">
+      <h2 class="slide-title">Estado Actual</h2>
+      <p class="slide-sub">Mitigación temprana en la web y el reto del hardware legado.</p>
+      <div class="cards">
+        <div class="card centered" style="--c: var(--info);">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+          <h3>Navegadores &amp; Web</h3>
+          <p>Habilitado por defecto en Chrome y Edge. Soporte nativo en OpenSSL.</p>
+        </div>
+        <div class="card centered" style="--c: var(--spy);">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+          <h3>Redes &amp; Nube Global</h3>
+          <p>Despliegue masivo del algoritmo híbrido en AWS y Cloudflare.</p>
+        </div>
+        <div class="card centered warn" style="--c: var(--noise);">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <h3>Obsolescencia en IoT</h3>
+          <p>Hardware sin RAM/ROM para claves en KB, imposibilidad de updates OTA.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Diapositiva 4: Estrategias Geopolíticas -->
+  <section class="slide" id="slide-geo" aria-label="Estrategias geopolíticas de transición">
+    <div class="slide-inner">
+      <h2 class="slide-title">Estrategias Geopolíticas de Transición</h2>
+      <p class="slide-sub">Diferencias globales en marcos normativos y objetivos criptográficos.</p>
+      <div class="cards">
+        <div class="card" style="--c: var(--info);">
+          <div class="flag-bar" style="background: linear-gradient(90deg, #3c3b6e, #ffffff, #b22234);"></div>
+          <div class="flag" role="img" aria-label="Estados Unidos">🇺🇸</div>
+          <ul class="bullets">
+            <li><span><b>Mandato NSA:</b> ML-KEM-1024 obligatorio para 2030.</span></li>
+            <li><span><b>Estándar NIST:</b> ML-KEM-768 con transición híbrida.</span></li>
+            <li><span><b>Adopción Comercial:</b> Híbrido hoy en la web pública, PQC puro en la meta final.</span></li>
+          </ul>
+        </div>
+        <div class="card" style="--c: var(--secret);">
+          <div class="flag-bar" style="background: linear-gradient(90deg, #003399 0%, #ffcc00 35%, #ffffff 65%, #0038b8 100%);"></div>
+          <div class="flag" role="img" aria-label="Europa e Israel">🇪🇺 🇮🇱</div>
+          <ul class="bullets">
+            <li><span><b>Híbrido Obligatorio:</b> ANSSI y BSI exigen doble escudo con fallback ECDH.</span></li>
+            <li><span><b>Cripto-Agilidad:</b> INCD prioriza resiliencia contra fallos teóricos o de librería.</span></li>
+            <li><span><b>Aceleración HW:</b> Offloading de retículos en silicio (HSMs / SmartNICs) para reducir latencia.</span></li>
+          </ul>
+        </div>
+        <div class="card" style="--c: var(--noise);">
+          <div class="flag-bar" style="background: linear-gradient(90deg, #de2910, #ffde00, #de2910);"></div>
+          <div class="flag" role="img" aria-label="China">🇨🇳</div>
+          <ul class="bullets">
+            <li><span><b>Soberanía Criptográfica:</b> Rechazo de estándares NIST/FIPS occidentales.</span></li>
+            <li><span><b>Algoritmos Propios:</b> CACR / OSCCA estandarizan retículos nacionales (LAC, AIGIS-Enc).</span></li>
+            <li><span><b>Ecosistema ShangMi:</b> Migración independiente para infraestructura y finanzas.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Diapositiva 5: Demo ¿Cómo funciona ML-KEM? -->
+  <section class="slide slide-demo" id="slide-demo" aria-label="¿Cómo funciona ML-KEM?">
   <header>
     <h1>¿Cómo funciona ML-KEM?</h1>
   </header>
@@ -499,6 +948,80 @@
       <small class="shortcuts-hint">Atajos: ← → navegar · Espacio play/pausa · Inicio reiniciar · F pantalla completa</small>
     </div>
   </div>
+  </section>
+
+  <!-- Diapositiva 6: Comparación CPU -->
+  <section class="slide" id="slide-cpu" aria-label="Resultados de laboratorio: CPU">
+    <div class="slide-inner">
+      <h2 class="slide-title">Resultados de Laboratorio</h2>
+      <p class="slide-sub">Sobrecarga de CPU: Latencia por Operación</p>
+      <div class="panel">
+        <h3 class="panel-title" style="color: var(--info);">Latencia / CPU (µs/op)</h3>
+        <div class="chart-box"><canvas id="latenciaChart" role="img" aria-label="Latencia por operación: X25519 110,74 µs, ML-KEM-768 138,73 µs"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Diapositiva 7: Comparación Memoria -->
+  <section class="slide" id="slide-memoria" aria-label="Resultados de laboratorio: memoria">
+    <div class="slide-inner">
+      <h2 class="slide-title">Resultados de Laboratorio</h2>
+      <p class="slide-sub">Consumo de Memoria (RAM)</p>
+      <div class="panel" style="border-top: 4px solid var(--noise);">
+        <h3 class="panel-title" style="color: var(--noise);">Huella de Memoria (Bytes)</h3>
+        <div class="chart-box"><canvas id="memoriaChart" role="img" aria-label="Huella de memoria: X25519 288 bytes, ML-KEM-768 9480 bytes"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Diapositiva 8: Comparación Red (Segmentación TCP) -->
+  <section class="slide" id="slide-red" aria-label="Impacto en red en TLS 1.3">
+    <div class="slide-inner">
+      <h2 class="slide-title">Impacto en Red en TLS 1.3</h2>
+      <p class="slide-sub">El problema del Handshake y la Segmentación TCP (MSS = 1460 B)</p>
+      <div class="panel" style="padding: 2rem 2.5rem;">
+        <div class="net-bars">
+          <div class="mss-line" aria-hidden="true"><span>MSS 1460 B</span></div>
+
+          <div class="net-row" style="--c: #1D4ED8;">
+            <p class="net-label">ClientHello X25519 · 512 B</p>
+            <div class="net-track"><div style="width: 24.5%; background: #2563EB;"></div></div>
+          </div>
+
+          <div class="net-row" style="--c: #1E40AF;">
+            <p class="net-label">Respuesta Servidor X25519 · 552 B</p>
+            <div class="net-track"><div style="width: 26.5%; background: #1D4ED8;"></div></div>
+          </div>
+
+          <div class="net-row" style="--c: var(--secret);">
+            <p class="net-label">ClientHello X25519MLKEM768 · 1450 B</p>
+            <div class="net-track"><div style="width: 69.5%; background: var(--accent);"></div></div>
+          </div>
+
+          <div class="net-row" style="--c: var(--noise);">
+            <p class="net-label">Respuesta Servidor X25519MLKEM768 · 1824 B (2 segmentos TCP)</p>
+            <div class="net-track">
+              <div style="width: 70%; background: #DC2626;"></div>
+              <div style="width: 17.4%; background: #991B1B;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+  <!-- Navegación entre diapositivas -->
+  <nav class="deck-nav" aria-label="Navegación de diapositivas">
+    <button type="button" id="deckPrev" class="deck-btn" onclick="deckBack()" aria-label="Diapositiva anterior" title="Anterior (←)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </button>
+    <span class="deck-counter" id="deckCounter" aria-live="polite">1 / 8</span>
+    <button type="button" id="deckNext" class="deck-btn primary" onclick="deckForward()" aria-label="Diapositiva siguiente" title="Siguiente (→)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+    </button>
+  </nav>
 
   <script>
     const stepsData = [
@@ -680,14 +1203,7 @@
       document.getElementById("nextBtn").disabled = currentStep === stepsData.length - 1;
 
       // Guarda el paso en la URL para poder refrescar o compartir la escena.
-      const hash = "#paso-" + (currentStep + 1);
-      if (location.hash !== hash) {
-        try {
-          history.replaceState(null, "", hash);
-        } catch (err) {
-          location.hash = hash;
-        }
-      }
+      syncHash();
     }
 
     function updateAutoButton() {
@@ -759,32 +1275,44 @@
         : "⛶ Pantalla completa";
     });
 
-    // Atajos de teclado: ←/→ pasos, Inicio reinicia, Espacio play/pausa, Esc pausa, F pantalla completa.
+    // Atajos de teclado (toda la presentación):
+    // ←/→ avanzan; dentro de la demo recorren sus pasos y al terminar pasan de diapositiva.
+    // En la demo: Espacio play/pausa, Inicio reinicia. Fuera de ella: Espacio avanza, Inicio va a la portada.
+    // F pantalla completa, Esc pausa.
     document.addEventListener("keydown", (e) => {
       if (e.altKey || e.ctrlKey || e.metaKey || e.repeat) return;
 
       const target = e.target;
       const onButton = target && target.closest && target.closest("button");
+      const onDemo = currentSlide === DEMO_INDEX;
 
       switch (e.key) {
         case "ArrowRight":
+        case "PageDown":
           e.preventDefault();
-          nextStep();
+          deckForward();
           break;
         case "ArrowLeft":
+        case "PageUp":
           e.preventDefault();
-          prevStep();
+          deckBack();
           break;
         case "Home":
           e.preventDefault();
-          goToStep(0);
+          if (onDemo) goToStep(0);
+          else showSlide(0);
+          break;
+        case "End":
+          e.preventDefault();
+          showSlide(slides.length - 1);
           break;
         case " ":
         case "Spacebar":
           // Si un botón tiene el foco, Espacio debe activar ese botón.
           if (onButton) return;
           e.preventDefault();
-          toggleAuto();
+          if (onDemo) toggleAuto();
+          else deckForward();
           break;
         case "f":
         case "F":
@@ -805,11 +1333,8 @@
       });
     });
 
-    // Si el hash cambia (URL editada o historial), se refleja en la escena.
-    window.addEventListener("hashchange", () => {
-      const idx = stepFromHash();
-      if (idx !== null && idx !== currentStep) goToStep(idx);
-    });
+    // Si el hash cambia (URL editada o historial), se refleja en la presentación.
+    window.addEventListener("hashchange", applyHash);
 
     function isStepAnimating() {
       if (reducedMotion) return false;
@@ -828,7 +1353,8 @@
       lastFrameTime = now;
       if (dt > 0.1) dt = 0.1; // evita saltos bruscos al volver de otra pestaña
 
-      if (document.hidden) {
+      // Sin dibujar mientras la demo no está en pantalla.
+      if (document.hidden || currentSlide !== DEMO_INDEX) {
         needsRedraw = true;
         return;
       }
@@ -1148,9 +1674,266 @@
       }
     }
 
+    // =====================================================
+    // PRESENTACIÓN: navegación entre diapositivas
+    // =====================================================
+    const slides = Array.from(document.querySelectorAll(".slide"));
+    const DEMO_INDEX = slides.findIndex((s) => s.id === "slide-demo");
+    const SHOR_INDEX = slides.findIndex((s) => s.id === "slide-amenaza");
+    const deckPrevBtn = document.getElementById("deckPrev");
+    const deckNextBtn = document.getElementById("deckNext");
+    const deckCounter = document.getElementById("deckCounter");
+    let currentSlide = 0;
+
+    function syncHash() {
+      const hash = currentSlide === DEMO_INDEX
+        ? "#paso-" + (currentStep + 1)
+        : "#diapositiva-" + (currentSlide + 1);
+      if (location.hash !== hash) {
+        try {
+          history.replaceState(null, "", hash);
+        } catch (err) {
+          location.hash = hash;
+        }
+      }
+    }
+
+    function showSlide(idx) {
+      if (idx < 0 || idx >= slides.length) return;
+      const leavingDemo = currentSlide === DEMO_INDEX && idx !== DEMO_INDEX;
+      currentSlide = idx;
+
+      slides.forEach((s, i) => {
+        const active = i === idx;
+        s.classList.toggle("active", active);
+        s.setAttribute("aria-hidden", active ? "false" : "true");
+      });
+
+      if (leavingDemo) stopAuto();
+      if (idx === DEMO_INDEX) {
+        // Reinicia la animación del paso actual al entrar a la demo.
+        resizeCanvases();
+        setStep(currentStep);
+      }
+
+      deckPrevBtn.disabled = idx === 0;
+      deckNextBtn.disabled = idx === slides.length - 1;
+      deckCounter.textContent = (idx + 1) + " / " + slides.length;
+
+      initChartFor(slides[idx].id);
+      syncHash();
+    }
+
+    // Avanzar: revela la curva de Shor, recorre los pasos de la demo y luego pasa de diapositiva.
+    function deckForward() {
+      if (currentSlide === SHOR_INDEX && !shorRevealed && shorChartInstance) {
+        shorChartInstance.data.datasets[1].hidden = false;
+        shorRevealed = true;
+        shorChartInstance.update();
+        return;
+      }
+      if (currentSlide === DEMO_INDEX && currentStep < stepsData.length - 1) {
+        goToStep(currentStep + 1);
+        return;
+      }
+      showSlide(currentSlide + 1);
+    }
+
+    function deckBack() {
+      if (currentSlide === DEMO_INDEX && currentStep > 0) {
+        goToStep(currentStep - 1);
+        return;
+      }
+      showSlide(currentSlide - 1);
+    }
+
+    function applyHash() {
+      const step = stepFromHash();
+      if (step !== null) {
+        currentStep = step;
+        if (currentSlide !== DEMO_INDEX) showSlide(DEMO_INDEX);
+        else goToStep(step);
+        return;
+      }
+      const match = /^#diapositiva-(\d+)$/.exec(location.hash);
+      const idx = match ? Number(match[1]) - 1 : -1;
+      if (idx >= 0 && idx < slides.length && idx !== currentSlide) showSlide(idx);
+    }
+
+    // =====================================================
+    // GRÁFICOS DE COMPARACIÓN (Chart.js)
+    // =====================================================
+    const chartsInitialized = {};
+    let shorChartInstance = null;
+    let shorRevealed = false;
+
+    if (window.Chart) {
+      Chart.defaults.color = "#33506B";
+      Chart.defaults.borderColor = "#C4D7E8";
+      Chart.defaults.font.family = CANVAS_FONT;
+      Chart.defaults.font.size = 13;
+    }
+
+    // Cada gráfico se crea al llegar a su diapositiva (tamaño correcto y animación de entrada).
+    function initChartFor(slideId) {
+      if (!window.Chart || chartsInitialized[slideId]) return;
+      const init = {
+        "slide-amenaza": initShorChart,
+        "slide-cpu": initLatenciaChart,
+        "slide-memoria": initMemoriaChart
+      }[slideId];
+      if (!init) return;
+      chartsInitialized[slideId] = true;
+      init();
+    }
+
+    function initShorChart() {
+      const ctxShor = document.getElementById("shorChart").getContext("2d");
+      shorChartInstance = new Chart(ctxShor, {
+        type: "line",
+        data: {
+          labels: ["128 bits", "192 bits", "256 bits"],
+          datasets: [
+            {
+              label: "Cripto Clásica (Fuerza Bruta)",
+              data: [1e5, 1e8, 1e12],
+              borderColor: "#2563EB",
+              backgroundColor: "rgba(37, 99, 235, 0.15)",
+              borderWidth: 3,
+              tension: 0.4,
+              fill: true
+            },
+            {
+              label: "Ataque Cuántico (Shor)",
+              data: [1e2, 1.5e2, 2.5e2],
+              borderColor: "#DC2626",
+              backgroundColor: "#DC2626",
+              borderWidth: 3,
+              borderDash: [6, 6],
+              tension: 0.1,
+              hidden: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              type: "logarithmic",
+              title: { display: true, text: "Pasos (Escala Logarítmica)", font: { weight: "bold" } },
+              ticks: {
+                maxTicksLimit: 7,
+                callback: (value) => {
+                  if (value === 0) return "0";
+                  const exp = Math.floor(Math.log10(Math.abs(value)));
+                  if (exp >= 4) {
+                    const mantissa = value / Math.pow(10, exp);
+                    const m = Number.isInteger(mantissa) ? mantissa : mantissa.toFixed(1);
+                    const sup = String(exp).split("").map((d) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[d]).join("");
+                    return m + "·10" + sup;
+                  }
+                  return value.toLocaleString("es-AR");
+                }
+              }
+            },
+            x: {
+              title: { display: true, text: "Tamaño de Clave", font: { weight: "bold" } }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                font: { size: 14, weight: "bold" },
+                filter: (item) => shorRevealed || item.datasetIndex !== 1
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function barOptions(unit) {
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (item) => item.parsed.y.toLocaleString("es-AR") + " " + unit
+            }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true },
+          x: { ticks: { font: { size: 15, weight: "bold" } }, grid: { display: false } }
+        }
+      };
+    }
+
+    function initLatenciaChart() {
+      const ctxLat = document.getElementById("latenciaChart").getContext("2d");
+      new Chart(ctxLat, {
+        type: "bar",
+        data: {
+          labels: ["X25519", "ML-KEM-768"],
+          datasets: [{
+            label: "Latencia (µs)",
+            data: [110.74, 138.73],
+            backgroundColor: ["#2563EB", "#7C3AED"],
+            borderRadius: 6
+          }]
+        },
+        options: barOptions("µs/op")
+      });
+    }
+
+    function initMemoriaChart() {
+      const ctxMem = document.getElementById("memoriaChart").getContext("2d");
+      new Chart(ctxMem, {
+        type: "bar",
+        data: {
+          labels: ["X25519", "ML-KEM-768"],
+          datasets: [{
+            label: "Memoria (Bytes)",
+            data: [288, 9480],
+            backgroundColor: ["#2563EB", "#DC2626"],
+            borderRadius: 6
+          }]
+        },
+        options: barOptions("bytes")
+      });
+    }
+
+    // Arranque: abre la diapositiva (o el paso de la demo) indicada en la URL.
     const initialStep = stepFromHash();
-    setStep(initialStep === null ? 0 : initialStep);
+    if (initialStep !== null) currentStep = initialStep;
+    const initialMatch = /^#diapositiva-(\d+)$/.exec(location.hash);
+    const initialSlide = initialStep !== null
+      ? DEMO_INDEX
+      : (initialMatch ? Math.min(slides.length - 1, Math.max(0, Number(initialMatch[1]) - 1)) : 0);
+    setStep(currentStep);
+    showSlide(initialSlide);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      document.querySelector(".deck").classList.remove("booting");
+    }));
     requestAnimationFrame(renderLoop);
+  </script>
+
+  <!-- Banderas como emojis (Twemoji, para que se vean también en Windows) -->
+  <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@15.1.0/dist/twemoji.min.js" crossorigin="anonymous"></script>
+  <script>
+    window.addEventListener("load", () => {
+      const geo = document.getElementById("slide-geo");
+      if (window.twemoji && geo) {
+        twemoji.parse(geo, {
+          folder: "svg",
+          ext: ".svg",
+          base: "https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/"
+        });
+      }
+    });
   </script>
 </body>
 </html>
