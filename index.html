@@ -8,12 +8,12 @@
   <style>
     :root {
       /* Base: navy profundo, superficies frías y texto de alto contraste. */
-      --ink: #000000;            /* texto principal y cabeceras */
+      --ink: #0B1F3A;            /* navy: texto principal, cabeceras y portada */
       --ink-muted: #33506B;      /* texto secundario */
       --page: #F3F7FB;           /* fondo de la página */
       --surface: #FFFFFF;        /* tarjetas y lienzos */
-      --surface-soft: #c2dbf4;   /* paneles y tarjetas de bloque */
-      --surface-hover: #D5E5F3;  /* hover de controles */
+      --surface-soft: #E3EDF7;   /* botones de paso y fondos suaves */
+      --surface-hover: #D3E2F1;  /* hover de controles */
       --border: #C4D7E8;         /* bordes suaves */
       --border-strong: #8FB3D1;  /* bordes de lienzos */
       --on-dark-muted: #D7E3EF;  /* texto secundario sobre navy */
@@ -142,7 +142,7 @@
 
     .chart-box {
       position: relative;
-      height: 52vh;
+      height: 46vh;
     }
 
     .chart-box.tall { height: 58vh; }
@@ -254,7 +254,8 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 6px;
+      height: 4px;
+      background: var(--accent);
     }
 
     .flag {
@@ -282,10 +283,10 @@
 
     .bullets li::before {
       content: "▪";
-      color: var(--c);
+      color: var(--accent);
     }
 
-    .bullets b { color: var(--c); }
+    .bullets b { color: var(--ink); font-weight: 800; }
 
     /* Banderas (Twemoji) */
     .emoji {
@@ -331,7 +332,7 @@
     .net-label {
       font-weight: 700;
       margin-bottom: 0.35rem;
-      color: var(--c);
+      color: var(--ink);
     }
 
     .net-track {
@@ -345,6 +346,38 @@
     }
 
     .net-track > div { height: 100%; }
+
+    /* Un color por algoritmo en todas las comparaciones. */
+    .bar-classic { background: var(--info); }      /* X25519 (clásico) */
+    .bar-pq { background: var(--accent); }         /* X25519MLKEM768 / ML-KEM-768 */
+    .bar-overflow {                                /* bytes que exceden el MSS */
+      background: repeating-linear-gradient(135deg, var(--noise) 0 8px, #B91C1C 8px 16px);
+    }
+
+    .algo-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 22px;
+      margin-top: 1.4rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    .algo-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .algo-legend i {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      display: inline-block;
+    }
 
     /* Navegación entre diapositivas */
     .deck-nav {
@@ -526,8 +559,8 @@
     }
 
     .block-card {
-      background: var(--surface-soft);
-      border-radius: 7px;
+      background: var(--surface);
+      border-radius: 10px;
       padding: 16px;
       display: flex;
       flex-direction: column;
@@ -563,8 +596,8 @@
       height: auto;
       aspect-ratio: 320 / 250;
       background: var(--white);
-      border-radius: 4px;
-      border: 2px solid var(--border-strong);
+      border-radius: 6px;
+      border: 1px solid var(--border);
       display: block;
     }
 
@@ -572,19 +605,19 @@
       font-size: 0.88rem;
       line-height: 1.5;
       color: var(--ink);
-      background: var(--surface);
+      background: var(--page);
       border: 1px solid var(--border);
       padding: 12px;
-      border-radius: 4px;
+      border-radius: 6px;
       flex-grow: 1;
       font-weight: 500;
     }
 
     /* Panel Explicativo Inferior */
     .info-panel {
-      background: var(--surface-soft);
-      border: 1px solid var(--border);
-      border-radius: 7px;
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: 10px;
       padding: 18px;
       display: flex;
       flex-direction: column;
@@ -603,61 +636,12 @@
       font-size: 0.94rem;
       line-height: 1.55;
       color: var(--ink);
-      margin-bottom: 12px;
       font-weight: 500;
     }
 
-    .controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .controls button {
-      background: var(--surface);
-      color: var(--ink);
-      border: 2px solid var(--ink);
-      padding: 8px 14px;
-      border-radius: 4px;
-      font-weight: 800;
-      font-size: 0.84rem;
-      cursor: pointer;
-      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
-    }
-
-    .controls button:hover:not(:disabled) {
-      background: var(--ink);
-      color: var(--white);
-    }
-
-    .controls button:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-    }
-
-    .controls button.primary {
-      background: var(--accent);
-      border-color: var(--ink);
-      color: var(--ink);
-    }
-
-    .controls button.primary:hover:not(:disabled) {
-      background: var(--accent-strong);
-      color: var(--white);
-    }
-
-    .step-btn:focus-visible,
-    .controls button:focus-visible {
+    .step-btn:focus-visible {
       outline: 3px solid var(--ink);
       outline-offset: 2px;
-    }
-
-    .shortcuts-hint {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--ink-muted);
-      opacity: 0.85;
     }
 
     .legend {
@@ -666,7 +650,7 @@
       align-items: center;
       gap: 6px 18px;
       padding: 8px 14px;
-      background: rgba(255, 255, 255, 0.8);
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 4px;
       font-size: 0.78rem;
@@ -732,9 +716,7 @@
         padding: 0;
       }
 
-      .controls,
-      .deck-nav,
-      .shortcuts-hint {
+      .deck-nav {
         display: none !important;
       }
 
@@ -804,7 +786,7 @@
           <h3>Navegadores &amp; Web</h3>
           <p>Habilitado por defecto en Chrome y Edge. Soporte nativo en OpenSSL.</p>
         </div>
-        <div class="card centered" style="--c: var(--spy);">
+        <div class="card centered" style="--c: var(--info);">
           <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
           <h3>Redes &amp; Nube Global</h3>
           <p>Despliegue masivo del algoritmo híbrido en AWS y Cloudflare.</p>
@@ -824,8 +806,8 @@
       <h2 class="slide-title">Estrategias Geopolíticas de Transición</h2>
       <p class="slide-sub">Diferencias globales en marcos normativos y objetivos criptográficos.</p>
       <div class="cards">
-        <div class="card" style="--c: var(--info);">
-          <div class="flag-bar" style="background: linear-gradient(90deg, #3c3b6e, #ffffff, #b22234);"></div>
+        <div class="card">
+          <div class="flag-bar"></div>
           <div class="flag" role="img" aria-label="Estados Unidos">🇺🇸</div>
           <ul class="bullets">
             <li><span><b>Mandato NSA:</b> ML-KEM-1024 obligatorio para 2030.</span></li>
@@ -833,8 +815,8 @@
             <li><span><b>Adopción Comercial:</b> Híbrido hoy en la web pública, PQC puro en la meta final.</span></li>
           </ul>
         </div>
-        <div class="card" style="--c: var(--secret);">
-          <div class="flag-bar" style="background: linear-gradient(90deg, #003399 0%, #ffcc00 35%, #ffffff 65%, #0038b8 100%);"></div>
+        <div class="card">
+          <div class="flag-bar"></div>
           <div class="flag" role="img" aria-label="Europa e Israel">🇪🇺 🇮🇱</div>
           <ul class="bullets">
             <li><span><b>Híbrido Obligatorio:</b> ANSSI y BSI exigen doble escudo con fallback ECDH.</span></li>
@@ -842,8 +824,8 @@
             <li><span><b>Aceleración HW:</b> Offloading de retículos en silicio (HSMs / SmartNICs) para reducir latencia.</span></li>
           </ul>
         </div>
-        <div class="card" style="--c: var(--noise);">
-          <div class="flag-bar" style="background: linear-gradient(90deg, #de2910, #ffde00, #de2910);"></div>
+        <div class="card">
+          <div class="flag-bar"></div>
           <div class="flag" role="img" aria-label="China">🇨🇳</div>
           <ul class="bullets">
             <li><span><b>Soberanía Criptográfica:</b> Rechazo de estándares NIST/FIPS occidentales.</span></li>
@@ -938,14 +920,6 @@
         <div class="story-title" id="titleText"></div>
         <p class="story-text" id="descText"></p>
       </div>
-      <div class="controls" role="group" aria-label="Controles de la presentación">
-        <button id="prevBtn" onclick="prevStep()">◀ Anterior</button>
-        <button id="nextBtn" class="primary" onclick="nextStep()">Siguiente Paso ▶</button>
-        <button id="autoBtn" onclick="toggleAuto()">⏯ Auto-Reproducir</button>
-        <button onclick="goToStep(0)">⏮ Reiniciar</button>
-        <button id="fullscreenBtn" onclick="toggleFullscreen()">⛶ Pantalla completa</button>
-      </div>
-      <small class="shortcuts-hint">Atajos: ← → navegar · Espacio play/pausa · Inicio reiniciar · F pantalla completa</small>
     </div>
   </div>
   </section>
@@ -956,8 +930,12 @@
       <h2 class="slide-title">Resultados de Laboratorio</h2>
       <p class="slide-sub">Sobrecarga de CPU: Latencia por Operación</p>
       <div class="panel">
-        <h3 class="panel-title" style="color: var(--info);">Latencia / CPU (µs/op)</h3>
+        <h3 class="panel-title">Latencia / CPU (µs/op)</h3>
         <div class="chart-box"><canvas id="latenciaChart" role="img" aria-label="Latencia por operación: X25519 110,74 µs, ML-KEM-768 138,73 µs"></canvas></div>
+        <div class="algo-legend" aria-hidden="true">
+          <span><i class="bar-classic"></i>X25519 (clásico)</span>
+          <span><i class="bar-pq"></i>ML-KEM-768 / híbrido (poscuántico)</span>
+        </div>
       </div>
     </div>
   </section>
@@ -967,9 +945,13 @@
     <div class="slide-inner">
       <h2 class="slide-title">Resultados de Laboratorio</h2>
       <p class="slide-sub">Consumo de Memoria (RAM)</p>
-      <div class="panel" style="border-top: 4px solid var(--noise);">
-        <h3 class="panel-title" style="color: var(--noise);">Huella de Memoria (Bytes)</h3>
+      <div class="panel">
+        <h3 class="panel-title">Huella de Memoria (Bytes)</h3>
         <div class="chart-box"><canvas id="memoriaChart" role="img" aria-label="Huella de memoria: X25519 288 bytes, ML-KEM-768 9480 bytes"></canvas></div>
+        <div class="algo-legend" aria-hidden="true">
+          <span><i class="bar-classic"></i>X25519 (clásico)</span>
+          <span><i class="bar-pq"></i>ML-KEM-768 / híbrido (poscuántico)</span>
+        </div>
       </div>
     </div>
   </section>
@@ -983,28 +965,33 @@
         <div class="net-bars">
           <div class="mss-line" aria-hidden="true"><span>MSS 1460 B</span></div>
 
-          <div class="net-row" style="--c: #1D4ED8;">
+          <div class="net-row">
             <p class="net-label">ClientHello X25519 · 512 B</p>
-            <div class="net-track"><div style="width: 24.5%; background: #2563EB;"></div></div>
+            <div class="net-track"><div class="bar-classic" style="width: 24.5%;"></div></div>
           </div>
 
-          <div class="net-row" style="--c: #1E40AF;">
+          <div class="net-row">
             <p class="net-label">Respuesta Servidor X25519 · 552 B</p>
-            <div class="net-track"><div style="width: 26.5%; background: #1D4ED8;"></div></div>
+            <div class="net-track"><div class="bar-classic" style="width: 26.5%;"></div></div>
           </div>
 
-          <div class="net-row" style="--c: var(--secret);">
+          <div class="net-row">
             <p class="net-label">ClientHello X25519MLKEM768 · 1450 B</p>
-            <div class="net-track"><div style="width: 69.5%; background: var(--accent);"></div></div>
+            <div class="net-track"><div class="bar-pq" style="width: 69.5%;"></div></div>
           </div>
 
-          <div class="net-row" style="--c: var(--noise);">
+          <div class="net-row">
             <p class="net-label">Respuesta Servidor X25519MLKEM768 · 1824 B (2 segmentos TCP)</p>
             <div class="net-track">
-              <div style="width: 70%; background: #DC2626;"></div>
-              <div style="width: 17.4%; background: #991B1B;"></div>
+              <div class="bar-pq" style="width: 70%;"></div>
+              <div class="bar-overflow" style="width: 17.4%;" title="Excede el MSS: segundo segmento TCP"></div>
             </div>
           </div>
+        </div>
+        <div class="algo-legend" aria-hidden="true">
+          <span><i class="bar-classic"></i>X25519 (clásico)</span>
+          <span><i class="bar-pq"></i>ML-KEM-768 / híbrido (poscuántico)</span>
+          <span><i class="bar-overflow"></i>Excede el MSS (2.º segmento TCP)</span>
         </div>
       </div>
     </div>
@@ -1099,14 +1086,14 @@
     const COLORS = {
       ink: "#0B1F3A",
       muted: "#33506B",
-      grid: "#E2E8F0",
-      gridDot: "#CBD5E1",
+      grid: "#DCE7F2",
+      gridDot: "#9DB8D3",
       public: "#2563EB",
       secret: "#B45309",
       accent: "#D97706",
       noise: "#DC2626",
       path: "#334155",
-      packet: "#0F172A",
+      packet: "#0B1F3A",
       packetText: "#FDE68A",
       spy: "#7C3AED",
       success: "#047857",
@@ -1199,17 +1186,12 @@
       document.getElementById("cardChannel").classList.toggle("highlight", s.activeBlock === "channel");
       document.getElementById("cardBob").classList.toggle("highlight", s.activeBlock === "bob");
 
-      document.getElementById("prevBtn").disabled = currentStep === 0;
-      document.getElementById("nextBtn").disabled = currentStep === stepsData.length - 1;
-
       // Guarda el paso en la URL para poder refrescar o compartir la escena.
       syncHash();
     }
 
-    function updateAutoButton() {
-      document.getElementById("autoBtn").textContent =
-        autoPlayTimer ? "⏸ Pausar" : "⏯ Auto-Reproducir";
-    }
+    // La reproducción automática sigue disponible con la barra espaciadora (sin botón visible).
+    function updateAutoButton() {}
 
     function stopAuto() {
       if (!autoPlayTimer) return;
@@ -1244,14 +1226,6 @@
     function goToStep(idx) {
       stopAuto();
       setStep(idx);
-    }
-
-    function nextStep() {
-      if (currentStep < stepsData.length - 1) goToStep(currentStep + 1);
-    }
-
-    function prevStep() {
-      if (currentStep > 0) goToStep(currentStep - 1);
     }
 
     // Pantalla completa: útil para presentar la demo en clase o en una charla.
@@ -1486,7 +1460,7 @@
     }
 
     function drawGrid(ctx, w, h) {
-      ctx.strokeStyle = "#D6E6F3";
+      ctx.strokeStyle = COLORS.grid;
       ctx.lineWidth = 1;
       for (let x = 30; x < w; x += 35) {
         ctx.beginPath(); ctx.moveTo(x, 20); ctx.lineTo(x, h - 20); ctx.stroke();
@@ -1494,7 +1468,7 @@
       for (let y = 30; y < h; y += 35) {
         ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(w - 20, y); ctx.stroke();
       }
-      ctx.fillStyle = "#7DC4EA";
+      ctx.fillStyle = COLORS.gridDot;
       for (let x = 30; x < w; x += 35) {
         for (let y = 30; y < h; y += 35) {
           ctx.beginPath(); ctx.arc(x, y, 2.2, 0, Math.PI * 2); ctx.fill();
@@ -1503,13 +1477,13 @@
     }
 
     function drawChannelBG(ctx) {
-      ctx.strokeStyle = "#D6E6F3";
+      ctx.strokeStyle = COLORS.grid;
       ctx.lineWidth = 2;
       ctx.setLineDash([6, 6]);
       ctx.beginPath(); ctx.moveTo(160, 20); ctx.lineTo(160, 230); ctx.stroke();
       ctx.setLineDash([]);
 
-      ctx.fillStyle = "#164070";
+      ctx.fillStyle = COLORS.muted;
       ctx.font = `700 11px ${CANVAS_FONT}`;
       ctx.textAlign = "center";
       ctx.fillText("📡 Tráfico por Internet", 160, 24);
@@ -1531,15 +1505,15 @@
       const w = 124;
       const h = 36;
 
-      ctx.fillStyle = "#191E52";
-      ctx.strokeStyle = "#FA790F";
+      ctx.fillStyle = COLORS.ink;
+      ctx.strokeStyle = COLORS.accent;
       ctx.lineWidth = 2;
       ctx.beginPath();
       roundRectPath(ctx, x - w / 2, y - h / 2, w, h, 8);
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = "#F5A25D";
+      ctx.fillStyle = COLORS.packetText;
       ctx.font = `700 11.5px ${CANVAS_FONT}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -1555,7 +1529,7 @@
 
       // Intento de intercepción: línea punteada desde el espía al paquete.
       if (near > 0.05) {
-        ctx.strokeStyle = "rgba(194, 65, 12, 0.55)";
+        ctx.strokeStyle = "rgba(124, 58, 237, 0.55)";
         ctx.lineWidth = 2;
         ctx.setLineDash([4, 4]);
         ctx.beginPath();
@@ -1567,7 +1541,7 @@
         // Insignia de fallo en la esquina superior derecha del paquete.
         const bx = packetX + 54;
         const by = 94;
-        ctx.fillStyle = "#C2410C";
+        ctx.fillStyle = COLORS.spy;
         ctx.beginPath();
         ctx.arc(bx, by, 9, 0, Math.PI * 2);
         ctx.fill();
@@ -1581,7 +1555,7 @@
         ctx.stroke();
       }
 
-      ctx.fillStyle = "#C2410C";
+      ctx.fillStyle = COLORS.spy;
       ctx.font = `700 11px ${CANVAS_FONT}`;
       ctx.textAlign = "center";
       ctx.fillText(
@@ -1602,7 +1576,7 @@
 
       // Anillo punteado que late alrededor de la cápsula ya formada.
       if (appear >= 1) {
-        ctx.strokeStyle = "rgba(250, 121, 15, 0.6)";
+        ctx.strokeStyle = "rgba(217, 119, 6, 0.6)";
         ctx.lineWidth = 2;
         ctx.setLineDash([5, 5]);
         ctx.beginPath();
@@ -1614,7 +1588,7 @@
       // Cuerpo de la cápsula.
       const w = 20 * scale;
       const h = 40 * scale;
-      ctx.fillStyle = "#FA790F";
+      ctx.fillStyle = COLORS.accent;
       ctx.strokeStyle = "#FFFFFF";
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -1631,7 +1605,7 @@
       ctx.stroke();
 
       if (appear >= 1) {
-        ctx.fillStyle = "#191E52";
+        ctx.fillStyle = COLORS.ink;
         ctx.font = `700 11px ${CANVAS_FONT}`;
         ctx.textAlign = "center";
         ctx.fillText("📦 Cápsula cifrada", cx, cy + h / 2 + 22);
@@ -1645,13 +1619,13 @@
       const ring = 16 + wave * 8;
       const alpha = 0.3 + wave * 0.45;
 
-      ctx.strokeStyle = `rgba(250, 121, 15, ${alpha.toFixed(2)})`;
+      ctx.strokeStyle = `rgba(217, 119, 6, ${alpha.toFixed(2)})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(x, y, ring, 0, Math.PI * 2);
       ctx.stroke();
 
-      drawDot(ctx, x, y, "#FA790F", 9, label, 25);
+      drawDot(ctx, x, y, COLORS.accent, 9, label, 25);
     }
 
     function drawDot(ctx, x, y, color, radius, label, labelDy) {
@@ -1666,7 +1640,7 @@
       if (label) {
         // Centrado para que las etiquetas no se salgan del canvas.
         const dy = labelDy === undefined ? -radius - 6 : labelDy;
-        ctx.fillStyle = "#191E52";
+        ctx.fillStyle = COLORS.ink;
         ctx.font = `700 11px ${CANVAS_FONT}`;
         ctx.textAlign = "center";
         ctx.fillText(label, x, y + dy);
@@ -1881,7 +1855,7 @@
           datasets: [{
             label: "Latencia (µs)",
             data: [110.74, 138.73],
-            backgroundColor: ["#2563EB", "#7C3AED"],
+            backgroundColor: ["#2563EB", "#D97706"],
             borderRadius: 6
           }]
         },
@@ -1898,7 +1872,7 @@
           datasets: [{
             label: "Memoria (Bytes)",
             data: [288, 9480],
-            backgroundColor: ["#2563EB", "#DC2626"],
+            backgroundColor: ["#2563EB", "#D97706"],
             borderRadius: 6
           }]
         },
